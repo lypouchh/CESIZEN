@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+/* Configuration de TES couleurs issues du Cahier des Charges */
+@theme {
+  --color-cesi-primary: #4A9C8D;    /* Teal Doux */
+  --color-cesi-secondary: #9AC0DB;  /* Bleu Ciel Pâle */
+  --color-cesi-dark: #1F2937;       /* Gris Anthracite */
+  --color-cesi-light: #F9FAFB;      /* Blanc Cassé */
+  --color-cesi-accent: #FF7E6B;     /* Corail Doux (Boutons) */
+  --color-cesi-success: #FCA5A5;    
+  --color-cesi-error: #6EE7B7;      
+}
+
+/* Un fond global apaisant pour toute l'app */
+body {
+  background-color: var(--color-cesi-light);
+  color: var(--color-cesi-dark);
+  font-family: 'Open Sans', sans-serif;
+}
