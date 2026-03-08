@@ -5,12 +5,15 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable {
-    protected $table = 'User';
-    public $timestamps = false; // Géré par createdAt en SQL (DEFAULT CURRENT_TIMESTAMP)
+    use HasApiTokens;
 
-    protected $fillable = ['email', 'passwordHash', 'firstname', 'lastname', 'isActive', 'id_role'];
+   // protected $table = 'User';
+    // public $timestamps = false;
+
+    protected $fillable = ['name', 'email', 'password'];
 
     public function role(): BelongsTo {
         return $this->belongsTo(Role::class, 'id_role');

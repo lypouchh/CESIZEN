@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::create('Article', function (Blueprint $table) {
+        Schema::create('articles', function (Blueprint $table) {
             $table->id();
             $table->string('title');
             $table->text('content');
             $table->string('category', 100);
             $table->timestamp('createdAt')->useCurrent();
-            $table->foreignId('id_user')->constrained('User');
+            $table->foreignId('id_user')->constrained('users');
         });
     }
-    public function down(): void { Schema::dropIfExists('Article'); }
+    public function down(): void { Schema::dropIfExists('articles'); }
 };

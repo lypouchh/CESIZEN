@@ -4,11 +4,14 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Exercise from './pages/Exercise';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // On crée un composant séparé pour la Navigation pour que le code reste clair
 function Navigation() {
   // state pour savoir si le menu mobile est ouvert (true) ou fermé (false)
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   // Fonction pour inverser l'état du menu
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -33,9 +36,16 @@ function Navigation() {
             <Link to="/" className="text-cesi-primary border-b-2 border-cesi-primary font-bold pb-1">Accueil</Link>
             <Link to="/infos" className="text-gray-600 hover:text-cesi-primary font-semibold transition">Informations</Link>
             <Link to="/exercise" className="text-gray-600 hover:text-cesi-primary font-semibold transition">Exercices de Respiration</Link>
-            <Link to="/login" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
-              Se Connecter / Inscription
-            </Link>
+            
+            {user ? (
+              <Link to="/profile" className="bg-cesi-primary text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm flex items-center gap-2">
+                <span>👤</span> {user.name}
+              </Link>
+            ) : (
+              <Link to="/login" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
+                Se Connecter / Inscription
+              </Link>
+            )}
           </div>
 
           {/* Bouton Menu Burger (Mobile uniquement - caché sur ordinateur) */}
@@ -64,9 +74,16 @@ function Navigation() {
             <Link to="/" onClick={toggleMenu} className="text-cesi-primary font-bold block px-3 py-3 rounded-md bg-green-50">Accueil</Link>
             <Link to="/infos" onClick={toggleMenu} className="text-gray-600 font-semibold block px-3 py-3 rounded-md hover:bg-gray-50">Informations</Link>
             <Link to="/exercise" onClick={toggleMenu} className="text-gray-600 font-semibold block px-3 py-3 rounded-md hover:bg-gray-50">Exercices de Respiration</Link>
-            <Link to="/login" onClick={toggleMenu} className="bg-cesi-accent text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Se Connecter</Link>
-            <Link to="/register" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-2 shadow-sm">S'Inscrire
-            </Link>
+            
+            {user ? (
+              <Link to="/profile" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Mon Profil ({user.name})</Link>
+            ) : (
+              <>
+                <Link to="/login" onClick={toggleMenu} className="bg-cesi-accent text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Se Connecter</Link>
+                <Link to="/register" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-2 shadow-sm">S'Inscrire
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -78,16 +95,19 @@ function Navigation() {
 function App() {
   return (
     <BrowserRouter>
-      <Navigation />
-      {/* Le contenu des pages s'affiche ici */}
-      <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/exercise" element={<Exercise />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </main>
+      <AuthProvider>
+        <Navigation />
+        {/* Le contenu des pages s'affiche ici */}
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/exercise" element={<Exercise />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </main>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

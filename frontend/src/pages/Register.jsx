@@ -1,6 +1,33 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Register() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [error, setError] = useState('');
+  
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await register(firstName, lastName, email, password, passwordConfirmation);
+      navigate('/profile');
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Erreur lors de l'inscription. Vérifiez que le backend est lancé.");
+      }
+    }
+  };
+
   return (
     <div className="min-h-[90vh] flex flex-col justify-center px-8 py-12">
       <div className="mb-8 text-center">
@@ -8,13 +35,17 @@ export default function Register() {
         <p className="text-gray-500 mt-2 text-sm">Rejoignez la communauté CESIZEN pour mieux gérer votre stress.</p>
       </div>
 
-      <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+      {error && <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm text-center">{error}</div>}
+
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex gap-4">
           <div className="flex-1">
             <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Prénom</label>
             <input 
               type="text" 
               placeholder="Jean"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
             />
           </div>
@@ -23,6 +54,8 @@ export default function Register() {
             <input 
               type="text" 
               placeholder="Dupont"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
             />
           </div>
@@ -33,6 +66,8 @@ export default function Register() {
           <input 
             type="email" 
             placeholder="votre@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
           />
         </div>
@@ -42,11 +77,24 @@ export default function Register() {
           <input 
             type="password" 
             placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
           />
         </div>
 
-        <button className="bg-cesi-accent text-white font-bold py-4 rounded-xl shadow-lg shadow-cesi-accent/20 mt-4 active:scale-95 transition-transform">
+        <div>
+          <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Confirmation</label>
+          <input 
+            type="password" 
+            placeholder="••••••••"
+            value={passwordConfirmation}
+            onChange={(e) => setPasswordConfirmation(e.target.value)}
+            className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
+          />
+        </div>
+
+        <button type="submit" className="bg-cesi-accent text-white font-bold py-4 rounded-xl shadow-lg shadow-cesi-accent/20 mt-4 active:scale-95 transition-transform">
           S'inscrire
         </button>
       </form>

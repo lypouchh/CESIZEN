@@ -5,10 +5,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\RespirationSessionController;
 use App\Http\Controllers\Api\ExerciseController;
+use App\Http\Controllers\AuthController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Routes Publiques
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+// Routes Protégées (nécessitent d'être connecté)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
 
 Route::apiResource('articles', ArticleController::class);
 Route::apiResource('exercises', ExerciseController::class);
