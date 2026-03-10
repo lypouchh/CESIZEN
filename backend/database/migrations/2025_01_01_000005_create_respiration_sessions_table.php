@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::create('RespirationSession', function (Blueprint $table) {
+        Schema::create('respiration_sessions', function (Blueprint $table) {
             $table->id();
             $table->timestamp('date')->useCurrent();
             $table->bigInteger('duration');
             $table->bigInteger('breathingRate');
-            $table->foreignId('id_user')->constrained('User');
-            $table->foreignId('id_Exercise')->constrained('Exercise');
+            $table->foreignId('id_user')->constrained('users');
+            $table->foreignId('id_Exercise')->constrained('exercises');
         });
     }
-    public function down(): void { Schema::dropIfExists('RespirationSession'); }
+    public function down(): void { Schema::dropIfExists('respiration_sessions'); }
 };

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::create('Exercise', function (Blueprint $table) {
+        Schema::create('exercises', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
             $table->bigInteger('durationDefault');
@@ -14,5 +14,5 @@ return new class extends Migration {
             $table->string('animationType', 50);
         });
     }
-    public function down(): void { Schema::dropIfExists('Exercise'); }
+    public function down(): void { Schema::dropIfExists('exercises'); }
 };

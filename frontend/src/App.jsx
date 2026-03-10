@@ -10,14 +10,14 @@ import ChangePassword from './pages/ChangePassword';
 import AddArticle from './pages/AddArticle';
 import AdminRegister from './pages/AdminRegister';
 import AdminDashboard from './pages/AdminDashboard';
+import Profile from './pages/Profile';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // On crée un composant séparé pour la Navigation pour que le code reste clair
 function Navigation() {
   // state pour savoir si le menu mobile est ouvert (true) ou fermé (false)
   const [isOpen, setIsOpen] = useState(false);
-
-  // On récupère les infos de l'utilisateur stockées dans le localStorage
-  const user = JSON.parse(localStorage.getItem('user'));
+  const { user, logout } = useAuth();
 
   // Fonction pour inverser l'état du menu
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -51,9 +51,18 @@ function Navigation() {
               </div>
             )}
 
-            <Link to="/login" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
-              Se Connecter / Inscription
-            </Link>
+            {user ? (
+              <div className="flex items-center gap-4">
+                <Link to="/profile" className="bg-cesi-primary text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm flex items-center gap-2">
+                  <span>👤</span> {user.firstname}
+                </Link>
+                <button onClick={logout} className="text-gray-500 text-sm hover:text-red-500">Déconnexion</button>
+              </div>
+            ) : (
+              <Link to="/login" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
+                Se Connecter / Inscription
+              </Link>
+            )}
           </div>
 
           {/* Bouton Menu Burger (Mobile uniquement - caché sur ordinateur) */}
@@ -82,9 +91,16 @@ function Navigation() {
             <Link to="/" onClick={toggleMenu} className="text-cesi-primary font-bold block px-3 py-3 rounded-md bg-green-50">Accueil</Link>
             <Link to="/infos" onClick={toggleMenu} className="text-gray-600 font-semibold block px-3 py-3 rounded-md hover:bg-gray-50">Informations</Link>
             <Link to="/exercise" onClick={toggleMenu} className="text-gray-600 font-semibold block px-3 py-3 rounded-md hover:bg-gray-50">Exercices de Respiration</Link>
-            <Link to="/login" onClick={toggleMenu} className="bg-cesi-accent text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Se Connecter</Link>
-            <Link to="/register" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-2 shadow-sm">S'Inscrire
-            </Link>
+            
+            {user ? (
+              <Link to="/profile" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Mon Profil ({user.firstname})</Link>
+            ) : (
+              <>
+                <Link to="/login" onClick={toggleMenu} className="bg-cesi-accent text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Se Connecter</Link>
+                <Link to="/register" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-2 shadow-sm">S'Inscrire
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -96,22 +112,20 @@ function Navigation() {
 function App() {
   return (
     <BrowserRouter>
-      <Navigation />
-      {/* Le contenu des pages s'affiche ici */}
-      <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/exercise" element={<Exercise />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/change-password" element={<ChangePassword />} />
-          <Route path="/admin/add-article" element={<AddArticle />} />
-          <Route path="/admin/setup-master" element={<AdminRegister />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        </Routes>
-      </main>
+      <AuthProvider>
+        <Navigation />
+        {/* Le contenu des pages s'affiche ici */}
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/exercise" element={<Exercise />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </main>
+      </AuthProvider>
+>>>>>>> 2de08eed4b49f28326c1c4e340f06043df2e3e0e
     </BrowserRouter>
   );
 }

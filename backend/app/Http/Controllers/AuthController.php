@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -135,5 +136,43 @@ class AuthController extends Controller
         if ($user->id_role === 1) return response()->json(['message' => 'Impossible de supprimer un admin'], 403);
         $user->delete();
         return response()->json(['message' => 'Utilisateur supprimé.']);
+    }
+
+    // Connexion
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->passwordHash)) {
+            return response()->json([
+                'message' => 'Les identifiants sont incorrects.'
+            ], 401);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    // Déconnexion
+    public function logout(Request $request)
+    {
+        // Supprime le token actuel
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Déconnexion réussie']);
+    }
+
+    // Récupérer l'utilisateur connecté
+    public function user(Request $request)
+    {
+        return $request->user();
     }
 }

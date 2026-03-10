@@ -7,8 +7,13 @@ use App\Http\Controllers\Api\RespirationSessionController;
 use App\Http\Controllers\Api\ExerciseController;
 use App\Http\Controllers\AuthController;
 
+// Routes Publiques
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', fn (Request $request) => $request->user());
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
     
     // Routes réservées aux admins (id_role = 1)
@@ -29,7 +34,6 @@ Route::middleware('auth:sanctum')->group(function () {
 // Routes pour la récupération de mot de passe
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
-Route::post('/register', [AuthController::class, 'register']);
 Route::post('/register-admin-secret', [AuthController::class, 'registerAdmin']);
 
 Route::get('/articles', [ArticleController::class, 'index']);
