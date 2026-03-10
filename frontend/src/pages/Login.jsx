@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function Login() {
   return (
     <div className="min-h-[80vh] flex flex-col justify-center px-8">
@@ -30,8 +32,14 @@ export default function Login() {
         </button>
       </form>
 
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-500">Pas encore de compte ? <span className="text-cesi-primary font-bold cursor-pointer">Inscrivez-vous</span></p>
+      <div className="mt-8 text-center flex flex-col gap-2">
+        <p className="text-sm text-gray-500">
+          Pas encore de compte ? 
+          <Link to="/register" className="text-cesi-primary font-bold ml-1">Inscrivez-vous</Link>
+        </p>
+        <Link to="/forgot-password" title="Récupérer mon mot de passe" className="text-xs text-gray-400 hover:text-cesi-primary transition-colors">
+          Mot de passe oublié ?
+        </Link>
       </div>
     </div>
   );

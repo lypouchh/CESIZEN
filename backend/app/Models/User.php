@@ -12,6 +12,14 @@ class User extends Authenticatable {
 
     protected $fillable = ['email', 'passwordHash', 'firstname', 'lastname', 'isActive', 'id_role'];
 
+    /**
+     * Indique à Laravel d'utiliser 'passwordHash' au lieu de 'password'
+     */
+    public function getAuthPassword()
+    {
+        return $this->passwordHash;
+    }
+
     public function role(): BelongsTo {
         return $this->belongsTo(Role::class, 'id_role');
     }

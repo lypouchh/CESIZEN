@@ -4,11 +4,20 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Exercise from './pages/Exercise';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import ChangePassword from './pages/ChangePassword';
+import AddArticle from './pages/AddArticle';
+import AdminRegister from './pages/AdminRegister';
+import AdminDashboard from './pages/AdminDashboard';
 
 // On crée un composant séparé pour la Navigation pour que le code reste clair
 function Navigation() {
   // state pour savoir si le menu mobile est ouvert (true) ou fermé (false)
   const [isOpen, setIsOpen] = useState(false);
+
+  // On récupère les infos de l'utilisateur stockées dans le localStorage
+  const user = JSON.parse(localStorage.getItem('user'));
 
   // Fonction pour inverser l'état du menu
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -33,6 +42,15 @@ function Navigation() {
             <Link to="/" className="text-cesi-primary border-b-2 border-cesi-primary font-bold pb-1">Accueil</Link>
             <Link to="/infos" className="text-gray-600 hover:text-cesi-primary font-semibold transition">Informations</Link>
             <Link to="/exercise" className="text-gray-600 hover:text-cesi-primary font-semibold transition">Exercices de Respiration</Link>
+            
+            {/* Lien Admin visible uniquement pour id_role === 1 */}
+            {user?.id_role === 1 && (
+              <div className="flex gap-4 items-center">
+                <Link to="/admin/dashboard" className="text-red-500 font-bold hover:underline">Dashboard</Link>
+                <Link to="/admin/add-article" className="text-red-500 font-bold hover:underline">Publier</Link>
+              </div>
+            )}
+
             <Link to="/login" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
               Se Connecter / Inscription
             </Link>
@@ -86,6 +104,12 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/exercise" element={<Exercise />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/admin/add-article" element={<AddArticle />} />
+          <Route path="/admin/setup-master" element={<AdminRegister />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </main>
     </BrowserRouter>
