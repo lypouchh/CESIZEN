@@ -9,12 +9,17 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [error, setError] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!acceptTerms) {
+      setError("Veuillez accepter les conditions d'utilisation pour créer un compte.");
+      return;
+    }
     setError('');
     try {
       await register(firstName, lastName, email, password, passwordConfirmation);
@@ -92,6 +97,19 @@ export default function Register() {
             onChange={(e) => setPasswordConfirmation(e.target.value)}
             className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
           />
+        </div>
+
+        <div className="flex items-center gap-3 px-1">
+          <input 
+            type="checkbox" 
+            id="terms" 
+            checked={acceptTerms}
+            onChange={(e) => setAcceptTerms(e.target.checked)}
+            className="w-5 h-5 rounded border-gray-300 text-cesi-primary focus:ring-cesi-primary cursor-pointer accent-cesi-primary"
+          />
+          <label htmlFor="terms" className="text-sm text-gray-500 cursor-pointer select-none">
+            J'accepte les <Link to="/terms" className="text-cesi-primary font-bold hover:underline" target="_blank">conditions d'utilisation</Link>
+          </label>
         </div>
 
         <button type="submit" className="bg-cesi-accent text-white font-bold py-4 rounded-xl shadow-lg shadow-cesi-accent/20 mt-4 active:scale-95 transition-transform">

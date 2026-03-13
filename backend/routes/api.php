@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\RespirationSessionController;
 use App\Http\Controllers\Api\ExerciseController;
 use App\Http\Controllers\AuthController;
+use App\Http\Middleware\EnsureUserIsAdmin;
 
 // Routes Publiques
 Route::post('/login', [AuthController::class, 'login']);
@@ -17,12 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/change-password', [AuthController::class, 'changePassword']);
     
     // Routes réservées aux admins (id_role = 1)
-    Route::middleware(function ($request, $next) {
-        if ($request->user()->id_role !== 1) {
-            return response()->json(['message' => 'Accès refusé. Admin uniquement.'], 403);
-        }
-        return $next($request);
-    })->group(function () {
+    Route::middleware(EnsureUserIsAdmin::class)->group(function () {
         Route::post('/articles', [ArticleController::class, 'store']);
         Route::post('/exercises', [ExerciseController::class, 'store']);
         // Gestion des utilisateurs

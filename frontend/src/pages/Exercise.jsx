@@ -11,19 +11,36 @@ export default function Exercise() {
   const [isActive, setIsActive] = useState(false);
   const [phase, setPhase] = useState('Prêt ?'); // Inhale, Hold, Exhale
   const [timer, setTimer] = useState(0);
+  
+  // On récupère les infos du mode actuel
+  const currentMode = MODES[selectedMode];
+
+  // Calcul pour savoir si le cercle doit être grand (Inspire ou Bloque)
+  const isExpanded = isActive && (phase === 'Inspirez' || phase === 'Bloquez');
+
+  // Calcul de la durée de transition CSS en fonction de la phase actuelle
+  const getTransitionDuration = () => {
+    if (!isActive) return '1000ms';
+    if (phase === 'Inspirez') return `${currentMode.inhale * 1000}ms`;
+    if (phase === 'Bloquez') return `${currentMode.hold * 1000}ms`;
+    if (phase === 'Expirez') return `${currentMode.exhale * 1000}ms`;
+    return '1000ms';
+  };
 
   useEffect(() => {
     let interval = null;
+    let t1 = null;
+    let t2 = null;
+
     if (isActive) {
-      const mode = MODES[selectedMode];
-      let currentTimer = 0;
+      const mode = currentMode;
       
       const runCycle = () => {
         setPhase('Inspirez');
-        setTimeout(() => {
+        t1 = setTimeout(() => {
           if (mode.hold > 0) {
             setPhase('Bloquez');
-            setTimeout(() => {
+            t2 = setTimeout(() => {
               setPhase('Expirez');
             }, mode.hold * 1000);
           } else {
@@ -37,10 +54,15 @@ export default function Exercise() {
       interval = setInterval(runCycle, cycleDuration);
     } else {
       setPhase('Prêt ?');
-      clearInterval(interval);
     }
-    return () => clearInterval(interval);
-  }, [isActive, selectedMode]);
+    
+    // Nettoyage complet pour éviter les bugs si on change de mode rapidement
+    return () => {
+      clearInterval(interval);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isActive, selectedMode, currentMode]); // Ajout de currentMode aux dépendances
 
   return (
     <div className="flex flex-col items-center justify-between min-h-[80vh] p-8">
@@ -51,7 +73,10 @@ export default function Exercise() {
 
       {/* Animation Circle */}
       <div className="relative flex items-center justify-center">
-        <div className={`w-48 h-48 rounded-full bg-cesi-primary/20 flex items-center justify-center transition-all duration-[4000ms] ease-in-out ${isActive && phase === 'Inspirez' ? 'scale-150 bg-cesi-primary/40' : 'scale-100'}`}>
+        <div 
+          className={`w-48 h-48 rounded-full bg-cesi-primary/20 flex items-center justify-center transition-all ease-in-out ${isExpanded ? 'scale-150 bg-cesi-primary/40' : 'scale-100'}`}
+          style={{ transitionDuration: getTransitionDuration() }}
+        >
           <span className="text-cesi-primary font-bold text-xl">{phase}</span>
         </div>
       </div>
@@ -61,7 +86,10 @@ export default function Exercise() {
           {Object.keys(MODES).map(m => (
             <button 
               key={m}
-              onClick={() => setSelectedMode(m)}
+              onClick={() => {
+                setSelectedMode(m);
+                setIsActive(false); // On arrête l'exercice si on change de mode
+              }}
               className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${selectedMode === m ? 'bg-cesi-primary text-white' : 'bg-gray-100 text-gray-400'}`}
             >
               {m}
@@ -70,7 +98,7 @@ export default function Exercise() {
         </div>
         
         <p className="text-center text-xs text-gray-400 italic mb-2">
-          Mode : {MODES[selectedMode].label}
+          Mode : {currentMode.label}
         </p>
 
         <button 

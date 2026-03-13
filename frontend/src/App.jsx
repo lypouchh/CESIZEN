@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Exercise from './pages/Exercise';
 import Register from './pages/Register';
+import Terms from './pages/Terms';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
@@ -59,9 +60,14 @@ function Navigation() {
                 <button onClick={logout} className="text-gray-500 text-sm hover:text-red-500">Déconnexion</button>
               </div>
             ) : (
-              <Link to="/login" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
-                Se Connecter / Inscription
-              </Link>
+              <div className="flex items-center gap-4">
+                <Link to="/login" className="text-gray-500 hover:text-cesi-primary font-bold transition">
+                  Se Connecter
+                </Link>
+                <Link to="/register" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
+                  Inscription
+                </Link>
+              </div>
             )}
           </div>
 
@@ -121,11 +127,11 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/exercise" element={<Exercise />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
         </main>
       </AuthProvider>
->>>>>>> 2de08eed4b49f28326c1c4e340f06043df2e3e0e
     </BrowserRouter>
   );
 }
