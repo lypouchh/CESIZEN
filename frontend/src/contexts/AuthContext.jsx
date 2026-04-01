@@ -32,12 +32,12 @@ export const AuthProvider = ({ children }) => {
   
   const register = async (firstname, lastname, email, password, password_confirmation) => {
     try {
-      const response = await api.post('/register', { firstname, lastname, email, password, password_confirmation });
-      const { user, token } = response.data;
+      // On combine prénom et nom pour correspondre au champ 'name' du backend
+      const name = `${firstname} ${lastname}`;
+      const response = await api.post('/register', { name, email, password, password_confirmation });
       
-      localStorage.setItem('token', token);
-      setToken(token);
-      setUser(user);
+      // Après l'inscription, on pourrait vouloir connecter l'utilisateur directement
+      // Pour l'instant, on se contente de ne pas lever d'erreur
       return true;
     } catch (error) {
       console.error("Erreur inscription:", error.response?.data || error.message);
@@ -71,6 +71,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = async (userData) => {
+    try {
+      // On ne met à jour que les champs modifiables
+      const { name, email } = userData;
+      const response = await api.put('/user', { name, email });
+      setUser(response.data); // Met à jour l'état global de l'utilisateur
+      return response.data;
+    } catch (error) {
+      console.error("Erreur mise à jour profil:", error.response?.data || error.message);
+      throw error;
+    }
+  };
+
   // Vérifier si l'utilisateur est déjà connecté au chargement de la page
   useEffect(() => {
     if (token && !user) {
@@ -85,7 +98,7 @@ export const AuthProvider = ({ children }) => {
   }, [token, user]); // On ajoute 'user' pour éviter une boucle si l'utilisateur est déjà chargé
 
   return (
-    <AuthContext.Provider value={{ user, token, api, register, login, logout }}>
+    <AuthContext.Provider value={{ user, token, api, register, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

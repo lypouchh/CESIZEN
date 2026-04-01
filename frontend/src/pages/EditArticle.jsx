@@ -1,15 +1,30 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-function AddArticle() {
+function EditArticle() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const { id } = useParams();
   const navigate = useNavigate();
   const { api } = useAuth();
+
+  useEffect(() => {
+    const fetchArticle = async () => {
+      try {
+        const res = await api.get(`/articles/${id}`);
+        setTitle(res.data.title);
+        setContent(res.data.content);
+        setCategory(res.data.category);
+      } catch (err) {
+        setError('Impossible de charger l'article.');
+      }
+    };
+    fetchArticle();
+  }, [id, api]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,18 +32,18 @@ function AddArticle() {
     setSuccess('');
 
     try {
-      await api.post('/articles', { title, content, category });
-      setSuccess('Article ajouté avec succès !');
+      await api.put(`/articles/${id}`, { title, content, category });
+      setSuccess('Article modifié avec succès !');
       setTimeout(() => navigate('/admin/articles'), 1500);
     } catch (err) {
-      setError('Erreur lors de l\'ajout de l\'article.');
+      setError('Erreur lors de la modification de l'article.');
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-8">
       <div className="bg-white p-6 rounded-xl shadow-md border">
-        <h2 className="text-2xl font-bold mb-6">Ajouter un nouvel article</h2>
+        <h2 className="text-2xl font-bold mb-6">Modifier l'article</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -74,7 +89,7 @@ function AddArticle() {
             type="submit"
             className="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition"
           >
-            Publier l'article
+            Enregistrer les modifications
           </button>
         </form>
       </div>
@@ -82,4 +97,4 @@ function AddArticle() {
   );
 }
 
-export default AddArticle;
+export default EditArticle;

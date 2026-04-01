@@ -1,17 +1,22 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Exercise from './pages/Exercise';
 import Register from './pages/Register';
-import Terms from './pages/Terms';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
 import AddArticle from './pages/AddArticle';
+import EditArticle from './pages/EditArticle'; // À créer
 import AdminRegister from './pages/AdminRegister';
-import AdminDashboard from './pages/AdminDashboard';
+import AdminLayout from './pages/AdminLayout';
+import UserManagement from './pages/UserManagement';
+import ArticleManagement from './pages/ArticleManagement';
+import Terms from './pages/Terms';
 import Profile from './pages/Profile';
+import ProtectedRoute from './contexts/ProtectedRoute';
+import AdminRoute from './contexts/AdminRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // On crée un composant séparé pour la Navigation pour que le code reste clair
@@ -23,19 +28,21 @@ function Navigation() {
   // Fonction pour inverser l'état du menu
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  const isAdmin = user?.role?.nom === 'admin';
+
   return (
     <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           
           {/* Logo CESIZEN (à gauche) */}
-          <Link to="/" className="flex-shrink-0 flex items-center gap-2">
-            <span className="text-cesi-primary text-3xl">🧘‍♂️</span>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-2xl text-cesi-primary tracking-widest leading-none">
-                CESI<span className="text-yellow-400">ZEN</span>
-              </span>
-            </div>
+          <Link to="/" className="flex-shrink-0 flex items-center">
+            {/* Remplacez le texte par une balise <img> pour votre logo */}
+            <img
+              src="/test.png" // Assurez-vous que votre logo est dans public/
+              alt="CESIZEN Logo" 
+              className="h-10 w-auto" // Ajustez la taille selon vos besoins
+            />
           </Link>
 
           {/* Menu Classique (Écrans d'ordinateur - caché sur mobile) */}
@@ -44,30 +51,24 @@ function Navigation() {
             <Link to="/infos" className="text-gray-600 hover:text-cesi-primary font-semibold transition">Informations</Link>
             <Link to="/exercise" className="text-gray-600 hover:text-cesi-primary font-semibold transition">Exercices de Respiration</Link>
             
-            {/* Lien Admin visible uniquement pour id_role === 1 */}
-            {user?.id_role === 1 && (
+            {/* Liens Admin visibles uniquement si l'utilisateur est admin */}
+            {isAdmin && (
               <div className="flex gap-4 items-center">
-                <Link to="/admin/dashboard" className="text-red-500 font-bold hover:underline">Dashboard</Link>
-                <Link to="/admin/add-article" className="text-red-500 font-bold hover:underline">Publier</Link>
+                <Link to="/admin/users" className="text-red-500 font-bold hover:underline">Dashboard Admin</Link>
               </div>
             )}
 
             {user ? (
               <div className="flex items-center gap-4">
                 <Link to="/profile" className="bg-cesi-primary text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm flex items-center gap-2">
-                  <span>👤</span> {user.firstname}
+                  <span>👤</span> {user.name.split(' ')[0]}
                 </Link>
                 <button onClick={logout} className="text-gray-500 text-sm hover:text-red-500">Déconnexion</button>
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <Link to="/login" className="text-gray-500 hover:text-cesi-primary font-bold transition">
-                  Se Connecter
-                </Link>
-                <Link to="/register" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
-                  Inscription
-                </Link>
-              </div>
+              <Link to="/login" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
+                Se Connecter / Inscription
+              </Link>
             )}
           </div>
 
@@ -99,7 +100,7 @@ function Navigation() {
             <Link to="/exercise" onClick={toggleMenu} className="text-gray-600 font-semibold block px-3 py-3 rounded-md hover:bg-gray-50">Exercices de Respiration</Link>
             
             {user ? (
-              <Link to="/profile" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Mon Profil ({user.firstname})</Link>
+              <Link to="/profile" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Mon Profil ({user.name.split(' ')[0]})</Link>
             ) : (
               <>
                 <Link to="/login" onClick={toggleMenu} className="bg-cesi-accent text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Se Connecter</Link>
@@ -113,9 +114,13 @@ function Navigation() {
     </nav>
   );
 }
-
 // Composant Principal
 function App() {
+  // Met à jour le titre de la page (onglet du navigateur)
+  useEffect(() => {
+    document.title = "CESIZEN"; // Texte de l'onglet du navigateur
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -123,12 +128,37 @@ function App() {
         {/* Le contenu des pages s'affiche ici */}
         <main>
           <Routes>
+            {/* Routes publiques */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/exercise" element={<Exercise />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/terms" element={<Terms />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/infos" element={<Articles />} />
+            <Route path="/articles/:id" element={<Article />} />
+
+            {/* Routes protégées - nécessitent une authentification */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/exercise" element={<Exercise />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/change-password" element={<ChangePassword />} />
+            </Route>
+
+            {/* Routes Admin - nécessitent le rôle admin */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Navigate to="users" replace />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="articles" element={<ArticleManagement />} />
+                <Route path="articles/add" element={<AddArticle />} />
+                <Route path="articles/edit/:id" element={<EditArticle />} />
+                <Route path="register" element={<AdminRegister />} />
+              </Route>
+            </Route>
+
+            {/* Route de secours pour les chemins non trouvés */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </AuthProvider>

@@ -7,8 +7,8 @@
   --color-cesi-dark: #1F2937;       /* Gris Anthracite */
   --color-cesi-light: #F9FAFB;      /* Blanc Cassé */
   --color-cesi-accent: #FF7E6B;     /* Corail Doux (Boutons) */
-  --color-cesi-success: #FCA5A5;    
-  --color-cesi-error: #6EE7B7;      
+  --color-cesi-success: #6EE7B7;    
+  --color-cesi-error: #FCA5A5;      
 }
 
 /* Un fond global apaisant pour toute l'app */
