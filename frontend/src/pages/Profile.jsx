@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import api from '../utils/api';
 
 export default function Profile() {
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout, updateUser, api } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '' });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -25,7 +24,7 @@ export default function Profile() {
 
       fetchFavorites();
     }
-  }, [user]);
+  }, [user, api]);
 
   if (!user) {
     return <div className="p-10 text-center">Chargement...</div>;

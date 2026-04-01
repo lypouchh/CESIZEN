@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const Article = () => {
@@ -9,7 +8,7 @@ const Article = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isFavorited, setIsFavorited] = useState(false);
-    const { user } = useAuth();
+    const { user, api } = useAuth();
 
     useEffect(() => {
         const fetchArticle = async () => {
@@ -31,7 +30,7 @@ const Article = () => {
         };
 
         fetchArticle();
-    }, [id, user]);
+    }, [id, user, api]);
 
     const handleFavorite = async () => {
         try {

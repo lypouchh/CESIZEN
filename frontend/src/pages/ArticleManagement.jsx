@@ -28,7 +28,7 @@ function ArticleManagement() {
         await api.delete(`/articles/${id}`);
         setArticles(prevArticles => prevArticles.filter(a => a.id !== id));
       } catch (err) {
-        setError('Erreur lors de la suppression de l'article.');
+        setError("Erreur lors de la suppression de l'article.");
       }
     }
   };

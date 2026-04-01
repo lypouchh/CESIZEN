@@ -13,6 +13,8 @@ import AdminRegister from './pages/AdminRegister';
 import AdminLayout from './pages/AdminLayout';
 import UserManagement from './pages/UserManagement';
 import ArticleManagement from './pages/ArticleManagement';
+import Articles from './pages/Articles';
+import Article from './pages/Article';
 import Terms from './pages/Terms';
 import Profile from './pages/Profile';
 import ProtectedRoute from './contexts/ProtectedRoute';

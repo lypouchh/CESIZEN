@@ -20,7 +20,7 @@ function EditArticle() {
         setContent(res.data.content);
         setCategory(res.data.category);
       } catch (err) {
-        setError('Impossible de charger l'article.');
+        setError("Impossible de charger l'article.");
       }
     };
     fetchArticle();
@@ -36,7 +36,7 @@ function EditArticle() {
       setSuccess('Article modifié avec succès !');
       setTimeout(() => navigate('/admin/articles'), 1500);
     } catch (err) {
-      setError('Erreur lors de la modification de l'article.');
+      setError("Erreur lors de la modification de l'article.");
     }
   };
 
