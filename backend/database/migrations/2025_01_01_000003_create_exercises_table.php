@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->bigInteger('durationDefault');
             $table->bigInteger('breathingRateDefault');
             $table->string('animationType', 50);
+            $table->timestamps();
         });
     }
     public function down(): void { Schema::dropIfExists('exercises'); }

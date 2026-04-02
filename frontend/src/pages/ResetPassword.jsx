@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 function ResetPassword() {
   const { token } = useParams();
@@ -12,13 +12,14 @@ function ResetPassword() {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const { api } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
     try {
-      await axios.post('http://localhost:8000/api/reset-password', {
+      await api.post('/reset-password', {
         token,
         email,
         password,
@@ -32,42 +33,61 @@ function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md">
-        <h2 className="text-center text-3xl font-extrabold text-cesi-primary">Nouveau mot de passe</h2>
-        
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Nouveau mot de passe</label>
-            <input
-              type="password"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-cesi-primary focus:border-cesi-primary"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
-            <input
-              type="password"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-cesi-primary focus:border-cesi-primary"
-              value={passwordConfirmation}
-              onChange={(e) => setPasswordConfirmation(e.target.value)}
-            />
-          </div>
+    <div className="min-h-screen bg-gov-primary flex items-center justify-center py-12 px-4 relative">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-gov-light-blue rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gov-light-blue rounded-full blur-3xl"></div>
+      </div>
 
-          {message && <p className="text-green-600 text-sm font-medium">{message}</p>}
-          {error && <p className="text-red-600 text-sm font-medium">{error}</p>}
+      <div className="w-full max-w-md relative z-10">
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-2xl p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Nouveau mot de passe</h1>
+            <p className="text-gray-600">Saisissez votre nouveau mot de passe.</p>
+          </div>
+          
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">Nouveau mot de passe</label>
+              <input
+                id="password"
+                type="password"
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-gov-primary transition-colors"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">Confirmer le mot de passe</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-gov-primary transition-colors"
+                value={passwordConfirmation}
+                onChange={(e) => setPasswordConfirmation(e.target.value)}
+              />
+            </div>
 
-          <button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-cesi-primary hover:bg-opacity-90"
-          >
-            Réinitialiser le mot de passe
-          </button>
-        </form>
+            {message && <p className="text-green-600 text-sm font-medium text-center">{message}</p>}
+            {error && <p className="text-red-600 text-sm font-medium text-center">{error}</p>}
+
+            <button
+              type="submit"
+              className="w-full bg-gov-accent text-white py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all active:scale-95"
+            >
+              Réinitialiser le mot de passe
+            </button>
+          </form>
+        </div>
+        <div className="text-center mt-6">
+          <Link to="/login" className="text-white hover:text-gray-100 transition-colors">
+            ← Retour à la connexion
+          </Link>
+        </div>
       </div>
     </div>
   );

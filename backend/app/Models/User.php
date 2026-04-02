@@ -15,14 +15,6 @@ class User extends Authenticatable {
 
     protected $fillable = ['name', 'email', 'password'];
 
-    /**
-     * Indique à Laravel d'utiliser 'passwordHash' au lieu de 'password'
-     */
-    public function getAuthPassword()
-    {
-        return $this->passwordHash;
-    }
-
     public function role(): BelongsTo {
         return $this->belongsTo(Role::class, 'id_role');
     }
@@ -33,5 +25,18 @@ class User extends Authenticatable {
 
     public function respirationSessions(): HasMany {
         return $this->hasMany(RespirationSession::class, 'id_user');
+    }
+
+    /**
+     * Vérifie si l'utilisateur a le rôle d'administrateur.
+     */
+    public function isAdmin(): bool {
+        // Accède à la relation 'role' et vérifie la propriété 'nom'
+        return $this->role && $this->role->nom === 'admin';
+    }
+
+    public function favoriteArticles()
+    {
+        return $this->belongsToMany(Article::class, 'article_user', 'user_id', 'article_id')->withTimestamps();
     }
 }

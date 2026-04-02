@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->foreignId('id_role')->default(2)->constrained('roles')->onDelete('restrict');
             $table->rememberToken();
             $table->timestamps(); // Crée created_at et updated_at
         });

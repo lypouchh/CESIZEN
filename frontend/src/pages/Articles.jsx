@@ -44,17 +44,17 @@ const Articles = () => {
                 <input
                     type="text"
                     placeholder="Rechercher un article..."
-                    className="w-full p-4 border rounded-lg"
+                    className="w-full p-4 border"
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredArticles.map((article) => (
-                    <div key={article.id} className="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300">
+                    <div key={article.id} className="bg-white shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300">
                         <div className="p-6">
                             <h2 className="text-xl font-bold mb-2">{article.title}</h2>
                             <p className="text-gray-700 mb-4">{article.content.substring(0, 100)}...</p>
-                            <Link to={`/articles/${article.id}`} className="text-blue-500 hover:underline">
+                            <Link to={`/articles/${article.id}`} className="text-gov-primary hover:underline">
                                 Lire la suite
                             </Link>
                         </div>

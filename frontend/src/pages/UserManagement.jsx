@@ -51,10 +51,10 @@ function UserManagement() {
   return (
     <>
       {loading && <p>Chargement des utilisateurs...</p>}
-      {error && <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>}
+      {error && <p className="text-red-500 bg-red-100 p-3">{error}</p>}
 
       {!loading && !error && (
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border">
+        <div className="bg-white shadow-sm overflow-hidden border">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b">
               <tr>

@@ -42,7 +42,7 @@ function EditArticle() {
 
   return (
     <div className="max-w-4xl mx-auto p-8">
-      <div className="bg-white p-6 rounded-xl shadow-md border">
+      <div className="bg-white p-6 shadow-md border">
         <h2 className="text-2xl font-bold mb-6">Modifier l'article</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -51,7 +51,7 @@ function EditArticle() {
             <input
               id="title"
               type="text"
-              className="w-full p-3 mt-1 border border-gray-300 rounded-lg"
+              className="w-full p-3 mt-1 border border-gray-300"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -63,7 +63,7 @@ function EditArticle() {
             <input
               id="category"
               type="text"
-              className="w-full p-3 mt-1 border border-gray-300 rounded-lg"
+              className="w-full p-3 mt-1 border border-gray-300"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
@@ -75,19 +75,19 @@ function EditArticle() {
             <textarea
               id="content"
               rows="10"
-              className="w-full p-3 mt-1 border border-gray-300 rounded-lg"
+              className="w-full p-3 mt-1 border border-gray-300"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
             ></textarea>
           </div>
 
-          {success && <p className="p-3 rounded bg-green-100 text-green-700">{success}</p>}
-          {error && <p className="p-3 rounded bg-red-100 text-red-700">{error}</p>}
+          {success && <p className="p-3 bg-green-100 text-green-700">{success}</p>}
+          {error && <p className="p-3 bg-red-100 text-red-700">{error}</p>}
 
           <button
             type="submit"
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition"
+            className="bg-gov-primary text-white px-6 py-3 font-bold hover:opacity-90 transition"
           >
             Enregistrer les modifications
           </button>

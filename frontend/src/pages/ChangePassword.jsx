@@ -36,8 +36,8 @@ function ChangePassword() {
 
   return (
     <div className="min-h-[80vh] flex flex-col justify-center px-8">
-      <div className="max-w-md w-full mx-auto space-y-8 bg-white p-8 rounded-xl shadow-md">
-        <h2 className="text-center text-2xl font-bold text-cesi-primary">Changer mon mot de passe</h2>
+      <div className="max-w-md w-full mx-auto space-y-8 bg-white p-8 shadow-md">
+        <h2 className="text-center text-2xl font-bold text-gov-primary">Changer mon mot de passe</h2>
         
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
@@ -48,7 +48,7 @@ function ChangePassword() {
               value={formData.current_password}
               onChange={handleChange}
               required
-              className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
+              className="w-full p-4 bg-gray-50 border-none focus:ring-2 focus:ring-gov-primary outline-none transition-all"
             />
           </div>
           <div>
@@ -59,7 +59,7 @@ function ChangePassword() {
               value={formData.new_password}
               onChange={handleChange}
               required
-              className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
+              className="w-full p-4 bg-gray-50 border-none focus:ring-2 focus:ring-gov-primary outline-none transition-all"
             />
           </div>
           <div>
@@ -70,7 +70,7 @@ function ChangePassword() {
               value={formData.new_password_confirmation}
               onChange={handleChange}
               required
-              className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
+              className="w-full p-4 bg-gray-50 border-none focus:ring-2 focus:ring-gov-primary outline-none transition-all"
             />
           </div>
 
@@ -79,7 +79,7 @@ function ChangePassword() {
 
           <button
             type="submit"
-            className="w-full bg-cesi-accent text-white font-bold py-4 rounded-xl shadow-lg shadow-cesi-accent/20 mt-4 active:scale-95 transition-transform"
+            className="w-full bg-gov-accent text-white font-bold py-4 shadow-lg shadow-gov-accent/20 mt-4 active:scale-95 transition-transform"
           >
             Mettre à jour
           </button>

@@ -1,19 +1,20 @@
 @import "tailwindcss";
 
-/* Configuration de TES couleurs issues du Cahier des Charges */
+/* Nouvelle palette de couleurs "gouvernementale" et vive */
 @theme {
-  --color-cesi-primary: #4A9C8D;    /* Teal Doux */
-  --color-cesi-secondary: #9AC0DB;  /* Bleu Ciel Pâle */
-  --color-cesi-dark: #1F2937;       /* Gris Anthracite */
-  --color-cesi-light: #F9FAFB;      /* Blanc Cassé */
-  --color-cesi-accent: #FF7E6B;     /* Corail Doux (Boutons) */
-  --color-cesi-success: #6EE7B7;    
-  --color-cesi-error: #FCA5A5;      
+  --color-gov-primary: #000091;    /* Bleu institutionnel vif (aligné sur l'exemple) */
+  --color-gov-secondary: #6c757d;  /* Gris secondaire */
+  --color-gov-dark: #212529;       /* Noir de texte */
+  --color-gov-light: #f8f9fa;      /* Fond clair */
+  --color-gov-accent: #e17000;     /* Orange vif pour actions */
+  --color-gov-success: #198754;    /* Vert succès */
+  --color-gov-error: #dc3545;      /* Rouge erreur */
+  --color-gov-light-blue: #60a5fa; /* Bleu clair pour les accents/ombres (inspiré de blue-400) */
 }
 
 /* Un fond global apaisant pour toute l'app */
 body {
-  background-color: var(--color-cesi-light);
-  color: var(--color-cesi-dark);
+  background-color: var(--color-gov-light);
+  color: var(--color-gov-dark);
   font-family: 'Open Sans', sans-serif;
 }

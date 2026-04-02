@@ -43,17 +43,17 @@ function ArticleManagement() {
         <h1 className="text-3xl font-bold">Gestion des Articles</h1>
         <button 
           onClick={() => navigate('/admin/articles/add')}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+          className="bg-gov-primary hover:opacity-90 text-white font-bold py-2 px-4"
         >
           Ajouter un article
         </button>
       </div>
 
       {loading && <p>Chargement des articles...</p>}
-      {error && <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>}
+      {error && <p className="text-red-500 bg-red-100 p-3">{error}</p>}
 
       {!loading && !error && (
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border">
+        <div className="bg-white shadow-sm overflow-hidden border">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -72,7 +72,7 @@ function ArticleManagement() {
                   <td className="p-4 space-x-4">
                     <button 
                       onClick={() => navigate(`/admin/articles/edit/${article.id}`)} 
-                      className="text-blue-500 hover:underline font-bold"
+                      className="text-gov-primary hover:underline font-bold"
                     >
                       Modifier
                     </button>

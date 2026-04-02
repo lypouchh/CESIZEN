@@ -49,9 +49,9 @@ export default function Profile() {
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center pt-10 px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+      <div className="bg-white p-8 shadow-lg w-full max-w-md">
         <div className="flex items-center gap-4 mb-6">
-          <div className="bg-cesi-primary/10 p-4 rounded-full text-4xl">👤</div>
+          <div className="bg-gov-primary/10 p-4 text-4xl">👤</div>
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Mon Profil</h1>
             <p className="text-gray-500">Mettez à jour vos informations</p>
@@ -66,7 +66,7 @@ export default function Profile() {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
+              className="w-full p-4 bg-gray-50 border-none focus:ring-2 focus:ring-gov-primary outline-none transition-all"
             />
           </div>
           <div>
@@ -76,7 +76,7 @@ export default function Profile() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
+              className="w-full p-4 bg-gray-50 border-none focus:ring-2 focus:ring-gov-primary outline-none transition-all"
             />
           </div>
 
@@ -85,7 +85,7 @@ export default function Profile() {
 
           <button
             type="submit"
-            className="w-full bg-cesi-accent text-white font-bold py-3 rounded-xl shadow-lg shadow-cesi-accent/20 active:scale-95 transition-transform"
+            className="w-full bg-gov-accent text-white font-bold py-3 shadow-lg shadow-gov-accent/20 active:scale-95 transition-transform"
           >
             Enregistrer les modifications
           </button>
@@ -97,7 +97,7 @@ export default function Profile() {
             <ul className="space-y-2">
               {favorites.map(fav => (
                 <li key={fav.id}>
-                  <Link to={`/articles/${fav.id}`} className="block hover:bg-gray-50 p-2 rounded-md">
+                  <Link to={`/articles/${fav.id}`} className="block hover:bg-gray-50 p-2">
                     {fav.title}
                   </Link>
                 </li>
@@ -111,14 +111,14 @@ export default function Profile() {
         <div className="border-t border-gray-100 pt-6 mt-6 space-y-4">
            <Link 
             to="/change-password" 
-            className="block text-center w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors"
+            className="block text-center w-full bg-gray-100 text-gray-700 font-bold py-3 hover:bg-gray-200 transition-colors"
           >
             Changer de mot de passe
           </Link>
           
           <button 
             onClick={logout} 
-            className="w-full bg-red-50 text-red-500 font-bold py-3 rounded-xl hover:bg-red-100 transition-colors"
+            className="w-full bg-red-50 text-red-500 font-bold py-3 hover:bg-red-100 transition-colors"
           >
             Se déconnecter
           </button>
