@@ -6,9 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Article extends Model {
-    protected $table = 'Article';
-    public $timestamps = false;
-
     protected $fillable = ['title', 'content', 'category', 'id_user'];
 
     public function user(): BelongsTo {

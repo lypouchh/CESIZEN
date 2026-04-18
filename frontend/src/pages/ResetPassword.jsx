@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 function ResetPassword() {
   const { token } = useParams();
@@ -12,13 +12,14 @@ function ResetPassword() {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const { api } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
     try {
-      await axios.post('http://localhost:8000/api/reset-password', {
+      await api.post('/reset-password', {
         token,
         email,
         password,

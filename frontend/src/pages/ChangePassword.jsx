@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 function ChangePassword() {
   const [formData, setFormData] = useState({
@@ -9,6 +9,7 @@ function ChangePassword() {
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const { api } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,18 +21,10 @@ function ChangePassword() {
     setError('');
 
     try {
-      // On récupère le token de session (stocké lors du login)
-      const token = localStorage.getItem('token'); 
-      
-      await axios.post('http://localhost:8000/api/change-password', {
+      await api.post('/change-password', {
         current_password: formData.current_password,
         new_password: formData.new_password,
         new_password_confirmation: formData.new_password_confirmation,
-      }, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json'
-        }
       });
 
       setMessage('Mot de passe modifié avec succès !');

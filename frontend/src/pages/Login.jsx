@@ -28,46 +28,46 @@ export default function Login() {
   return (
     <div className="min-h-[80vh] flex flex-col justify-center px-8">
       <div className="mb-10 text-center">
-        <h2 className="text-2xl font-bold text-cesi-primary">Bon retour parmi nous</h2>
-        <p className="text-gray-500 mt-2 text-sm text-balance">Connectez-vous pour suivre vos progrès et vos émotions.</p>
+        <h2 className="text-2xl font-bold text-cesi-primary">Connexion</h2>
+        <p className="text-gray-600 mt-2 text-sm">Accédez à votre espace personnel</p>
       </div>
 
-      {error && <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm text-center">{error}</div>}
+      {error && <div className="bg-red-50 text-cesi-error p-3 border border-red-200 mb-4 text-sm text-center">{error}</div>}
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Email</label>
+          <label className="block text-sm font-medium text-cesi-dark mb-2">Adresse e-mail</label>
           <input 
             type="email" 
-            placeholder="votre@email.com"
+            placeholder="votre@email.fr"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
+            className="w-full p-3 bg-white border border-cesi-border focus:border-cesi-primary focus:ring-1 focus:ring-cesi-primary outline-none transition-all"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Mot de passe</label>
+          <label className="block text-sm font-medium text-cesi-dark mb-2">Mot de passe</label>
           <input 
             type="password" 
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-cesi-primary outline-none transition-all"
+            className="w-full p-3 bg-white border border-cesi-border focus:border-cesi-primary focus:ring-1 focus:ring-cesi-primary outline-none transition-all"
           />
         </div>
 
-        <button type="submit" className="bg-cesi-accent text-white font-bold py-4 rounded-xl shadow-lg shadow-cesi-accent/20 mt-4 active:scale-95 transition-transform">
+        <button type="submit" className="bg-cesi-accent text-white font-medium py-3 border-2 border-cesi-accent hover:bg-cesi-primary hover:border-cesi-primary transition-colors mt-4">
           Se connecter
         </button>
       </form>
 
       <div className="mt-8 text-center flex flex-col gap-2">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-600">
           Pas encore de compte ? 
-          <Link to="/register" className="text-cesi-primary font-bold ml-1">Inscrivez-vous</Link>
+          <Link to="/register" className="text-cesi-primary font-medium ml-1 hover:underline">Créer un compte</Link>
         </p>
-        <Link to="/forgot-password" title="Récupérer mon mot de passe" className="text-xs text-gray-400 hover:text-cesi-primary transition-colors mt-2">
+        <Link to="/forgot-password" className="text-sm text-gray-500 hover:text-cesi-primary transition-colors">
           Mot de passe oublié ?
         </Link>
       </div>

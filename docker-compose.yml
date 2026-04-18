@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # Service MySQL pour la base de données
+  mysql:
+    image: mysql:8.0
+    container_name: cesizen-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-cesizen}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_USER: ${DB_USERNAME:-cesizen_user}
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'false'
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/docker/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - cesizen-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Service PHP-FPM pour le backend Laravel
+  laravel:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cesizen-laravel
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - APP_NAME=CESIZEN
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-cesizen}
+      - DB_USERNAME=${DB_USERNAME:-cesizen_user}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - CACHE_DRIVER=file
+      - SESSION_DRIVER=file
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/vendor
+    networks:
+      - cesizen-network
+    expose:
+      - 9000
+
+  # Service Nginx pour servir le backend
+  nginx:
+    image: nginx:alpine
+    container_name: cesizen-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/app
+      - ./backend/docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - laravel
+    networks:
+      - cesizen-network
+
+  # Service Node pour le frontend (optionnel, peut être lancé séparément)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cesizen-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - cesizen-network
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+
+networks:
+  cesizen-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

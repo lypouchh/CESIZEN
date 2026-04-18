@@ -3,17 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable {
-    use HasApiTokens;
+    use HasApiTokens, HasFactory;
 
    // protected $table = 'User';
     // public $timestamps = false;
 
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = ['firstname', 'lastname', 'email', 'passwordHash', 'id_role', 'isActive'];
 
     /**
      * Indique à Laravel d'utiliser 'passwordHash' au lieu de 'password'

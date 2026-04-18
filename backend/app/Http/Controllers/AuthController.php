@@ -83,7 +83,7 @@ class AuthController extends Controller
         $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:User,email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
         ]);
 
@@ -96,7 +96,13 @@ class AuthController extends Controller
             'isActive' => true
         ]);
 
-        return response()->json(['message' => 'Compte créé avec succès.'], 201);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Compte créé avec succès.',
+            'user' => $user,
+            'token' => $token
+        ], 201);
     }
 
     public function registerAdmin(Request $request)
@@ -104,7 +110,7 @@ class AuthController extends Controller
         $request->validate([
             'firstname' => 'required|string',
             'lastname' => 'required|string',
-            'email' => 'required|email|unique:User,email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'secret_code' => 'required'
         ]);

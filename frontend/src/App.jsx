@@ -12,6 +12,8 @@ import AddArticle from './pages/AddArticle';
 import AdminRegister from './pages/AdminRegister';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
+import Articles from './pages/Articles';
+import ArticleDetail from './pages/ArticleDetail';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // On crée un composant séparé pour la Navigation pour que le code reste clair
@@ -24,47 +26,47 @@ function Navigation() {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+    <nav className="bg-white border-b border-cesi-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
+        <div className="flex justify-between h-16 items-center">
           
           {/* Logo CESIZEN (à gauche) */}
           <Link to="/" className="flex-shrink-0 flex items-center gap-2">
-            <span className="text-cesi-primary text-3xl">🧘‍♂️</span>
+            <span className="text-cesi-primary text-2xl">📋</span>
             <div className="flex flex-col">
-              <span className="font-extrabold text-2xl text-cesi-primary tracking-widest leading-none">
-                CESI<span className="text-yellow-400">ZEN</span>
+              <span className="font-bold text-xl text-cesi-primary tracking-wide leading-none">
+                CESI<span className="text-yellow-500">ZEN</span>
               </span>
             </div>
           </Link>
 
           {/* Menu Classique (Écrans d'ordinateur - caché sur mobile) */}
-          <div className="hidden md:flex space-x-8 items-center">
-            <Link to="/" className="text-cesi-primary border-b-2 border-cesi-primary font-bold pb-1">Accueil</Link>
-            <Link to="/infos" className="text-gray-600 hover:text-cesi-primary font-semibold transition">Informations</Link>
-            <Link to="/exercise" className="text-gray-600 hover:text-cesi-primary font-semibold transition">Exercices de Respiration</Link>
+          <div className="hidden md:flex space-x-6 items-center">
+            <Link to="/" className="text-cesi-primary font-medium border-b-2 border-cesi-primary pb-1">Accueil</Link>
+            <Link to="/infos" className="text-gray-600 hover:text-cesi-primary font-medium transition">Informations</Link>
+            <Link to="/exercise" className="text-gray-600 hover:text-cesi-primary font-medium transition">Exercices</Link>
             
             {/* Lien Admin visible uniquement pour id_role === 1 */}
             {user?.id_role === 1 && (
               <div className="flex gap-4 items-center">
-                <Link to="/admin/dashboard" className="text-red-500 font-bold hover:underline">Dashboard</Link>
-                <Link to="/admin/add-article" className="text-red-500 font-bold hover:underline">Publier</Link>
+                <Link to="/admin/dashboard" className="text-red-600 font-medium hover:underline">Administration</Link>
+                <Link to="/admin/add-article" className="text-red-600 font-medium hover:underline">Publier</Link>
               </div>
             )}
 
             {user ? (
               <div className="flex items-center gap-4">
-                <Link to="/profile" className="bg-cesi-primary text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm flex items-center gap-2">
+                <Link to="/profile" className="bg-cesi-primary text-white px-4 py-2 font-medium border border-cesi-primary hover:bg-white hover:text-cesi-primary transition flex items-center gap-2">
                   <span>👤</span> {user.firstname}
                 </Link>
-                <button onClick={logout} className="text-gray-500 text-sm hover:text-red-500">Déconnexion</button>
+                <button onClick={logout} className="text-gray-600 text-sm hover:text-red-600 transition">Déconnexion</button>
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <Link to="/login" className="text-gray-500 hover:text-cesi-primary font-bold transition">
-                  Se Connecter
+                <Link to="/login" className="text-gray-600 hover:text-cesi-primary font-medium transition">
+                  Connexion
                 </Link>
-                <Link to="/register" className="bg-cesi-accent text-white px-5 py-2 rounded-md font-bold hover:opacity-90 transition shadow-sm">
+                <Link to="/register" className="bg-cesi-accent text-white px-4 py-2 font-medium border border-cesi-accent hover:bg-cesi-primary hover:border-cesi-primary transition">
                   Inscription
                 </Link>
               </div>
@@ -129,6 +131,15 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/infos" element={<Articles />} />
+            <Route path="/article/:id" element={<ArticleDetail />} />
+            
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/admin/register" element={<AdminRegister />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/add-article" element={<AddArticle />} />
           </Routes>
         </main>
       </AuthProvider>

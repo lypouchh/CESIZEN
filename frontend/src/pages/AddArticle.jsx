@@ -1,30 +1,45 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 function AddArticle() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [category, setCategory] = useState('Bien-être');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
 
     try {
-      await axios.post('http://localhost:8000/api/articles', {
-        title,
-        content,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch('http://localhost:8000/api/articles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          category,
+          id_user: user.id
+        })
       });
-      setMessage('Article ajouté avec succès !');
-      setTitle('');
-      setContent('');
-      setTimeout(() => navigate('/'), 2000);
+
+      if (response.ok) {
+        setMessage('Article ajouté avec succès !');
+        setTitle('');
+        setContent('');
+        setTimeout(() => navigate('/infos'), 2000);
+      } else {
+        const error = await response.json();
+        setMessage(error.message || 'Erreur lors de l\'ajout.');
+      }
     } catch (err) {
-      setMessage('Erreur lors de l\'ajout.');
+      setMessage('Erreur de connexion.');
     }
   };
 
@@ -44,6 +59,22 @@ function AddArticle() {
               onChange={(e) => setTitle(e.target.value)}
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Catégorie</label>
+            <select
+              className="w-full p-3 mt-1 border border-gray-300 rounded-lg focus:ring-cesi-primary focus:border-cesi-primary"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+            >
+              <option value="Bien-être">Bien-être</option>
+              <option value="Santé">Santé</option>
+              <option value="Méditation">Méditation</option>
+              <option value="Respiration">Respiration</option>
+              <option value="Stress">Stress</option>
+            </select>
           </div>
           
           <div>

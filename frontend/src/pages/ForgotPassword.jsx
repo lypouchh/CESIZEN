@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const { api } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,7 +13,7 @@ function ForgotPassword() {
     setError('');
     try {
       // On envoie la demande au backend
-      await axios.post('http://localhost:8000/api/forgot-password', { email });
+      await api.post('/forgot-password', { email });
       setMessage('Si cet email existe, un lien de récupération a été envoyé.');
     } catch (err) {
       setError(err.response?.data?.message || 'Une erreur est survenue.');

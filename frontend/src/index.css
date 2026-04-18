@@ -1,19 +1,43 @@
 @import "tailwindcss";
 
-/* Configuration de TES couleurs issues du Cahier des Charges */
+/* Configuration des couleurs gouvernementales classiques */
 @theme {
-  --color-cesi-primary: #4A9C8D;    /* Teal Doux */
-  --color-cesi-secondary: #9AC0DB;  /* Bleu Ciel Pâle */
-  --color-cesi-dark: #1F2937;       /* Gris Anthracite */
-  --color-cesi-light: #F9FAFB;      /* Blanc Cassé */
-  --color-cesi-accent: #FF7E6B;     /* Corail Doux (Boutons) */
-  --color-cesi-success: #FCA5A5;    
-  --color-cesi-error: #6EE7B7;      
+  --color-cesi-primary: #1e40af;     /* Bleu marine classique */
+  --color-cesi-secondary: #3b82f6;   /* Bleu clair institutionnel */
+  --color-cesi-dark: #1f2937;       /* Gris anthracite */
+  --color-cesi-light: #ffffff;      /* Blanc pur */
+  --color-cesi-accent: #2563eb;     /* Bleu bouton */
+  --color-cesi-success: #059669;    /* Vert succès */
+  --color-cesi-error: #dc2626;      /* Rouge erreur */
+  --color-cesi-muted: #f8fafc;      /* Gris très clair pour fonds */
+  --color-cesi-border: #e2e8f0;     /* Gris bordure */
 }
 
-/* Un fond global apaisant pour toute l'app */
+/* Style gouvernemental sobre */
 body {
   background-color: var(--color-cesi-light);
   color: var(--color-cesi-dark);
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.5;
+}
+
+/* Réduction des arrondis pour un style plus institutionnel */
+.rounded-xl {
+  border-radius: 0.25rem;
+}
+
+.rounded-lg {
+  border-radius: 0.125rem;
+}
+
+.rounded-md {
+  border-radius: 0.125rem;
+}
+
+/* Suppression des ombres pour un look plus plat */
+.shadow-sm,
+.shadow,
+.shadow-md,
+.shadow-lg {
+  box-shadow: none;
 }

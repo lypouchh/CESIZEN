@@ -11,8 +11,8 @@ return new class extends Migration {
             $table->string('title');
             $table->text('content');
             $table->string('category', 100);
-            $table->timestamp('createdAt')->useCurrent();
             $table->foreignId('id_user')->constrained('users');
+            $table->timestamps();
         });
     }
     public function down(): void { Schema::dropIfExists('articles'); }

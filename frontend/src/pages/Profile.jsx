@@ -7,32 +7,32 @@ export default function Profile() {
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center pt-10 px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+      <div className="bg-white p-8 border border-cesi-border w-full max-w-md">
         <div className="flex items-center gap-4 mb-6">
-          <div className="bg-cesi-primary/10 p-4 rounded-full text-4xl">👤</div>
+          <div className="bg-cesi-muted p-4 border border-cesi-border text-2xl">👤</div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">{user.name}</h1>
-            <p className="text-gray-500">{user.email}</p>
+            <h1 className="text-2xl font-bold text-cesi-dark">{user.name}</h1>
+            <p className="text-gray-600">{user.email}</p>
           </div>
         </div>
 
-        <div className="border-t border-gray-100 pt-6">
-          <h3 className="font-bold text-gray-700 mb-3">Mes statistiques</h3>
+        <div className="border-t border-cesi-border pt-6">
+          <h3 className="font-bold text-cesi-dark mb-3">Mes statistiques</h3>
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-50 p-4 rounded-xl text-center">
+            <div className="bg-cesi-muted p-4 border border-cesi-border text-center">
               <span className="block text-2xl font-bold text-cesi-primary">0</span>
-              <span className="text-xs text-gray-500 uppercase">Exercices</span>
+              <span className="text-xs text-gray-600 uppercase">Exercices</span>
             </div>
-            <div className="bg-gray-50 p-4 rounded-xl text-center">
+            <div className="bg-cesi-muted p-4 border border-cesi-border text-center">
               <span className="block text-2xl font-bold text-cesi-primary">0</span>
-              <span className="text-xs text-gray-500 uppercase">Jours</span>
+              <span className="text-xs text-gray-600 uppercase">Jours</span>
             </div>
           </div>
         </div>
 
         <button 
           onClick={logout} 
-          className="w-full bg-red-50 text-red-500 font-bold py-3 rounded-xl hover:bg-red-100 transition-colors"
+          className="w-full bg-red-50 text-red-600 font-medium py-3 border border-red-200 hover:bg-red-100 transition-colors"
         >
           Se déconnecter
         </button>

@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 function AdminRegister() {
   const [formData, setFormData] = useState({ firstname: '', lastname: '', email: '', password: '', secret_code: '' });
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const { api } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/api/register-admin-secret', formData);
+      await api.post('/register-admin-secret', formData);
       setMessage('Admin créé ! Redirection...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {

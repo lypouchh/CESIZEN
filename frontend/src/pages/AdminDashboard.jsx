@@ -1,22 +1,18 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
-  const token = localStorage.getItem('token');
+  const { api } = useAuth();
 
   const fetchUsers = async () => {
-    const res = await axios.get('http://localhost:8000/api/admin/users', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await api.get('/admin/users');
     setUsers(res.data);
   };
 
   const deleteUser = async (id) => {
     if (window.confirm("Supprimer cet utilisateur ?")) {
-      await axios.delete(`http://localhost:8000/api/admin/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/admin/users/${id}`);
       fetchUsers();
     }
   };

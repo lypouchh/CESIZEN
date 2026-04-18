@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center pb-20 bg-cesi-light min-h-screen">
+    <div className="flex flex-col items-center pb-20 bg-white min-h-screen">
       
       {/* Hero Section */}
-      <header className="text-center py-16 px-4 w-full max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-cesi-dark leading-tight">
+      <header className="text-center py-16 px-4 w-full max-w-4xl bg-cesi-muted">
+        <h1 className="text-4xl md:text-5xl font-bold text-cesi-dark leading-tight">
           Accompagnement pour votre <span className="text-cesi-primary">sérénité</span>
         </h1>
         <p className="text-gray-600 mt-6 text-lg max-w-2xl mx-auto">
@@ -16,9 +16,9 @@ export default function Home() {
         <div className="mt-8 flex flex-col items-center">
           <Link 
             to="/exercise" 
-            className="bg-cesi-primary text-white px-8 py-4 rounded-full font-bold text-lg hover:opacity-90 transition shadow-md flex items-center gap-2"
+            className="bg-cesi-accent text-white px-8 py-3 font-bold text-lg hover:bg-cesi-primary transition border-2 border-cesi-accent flex items-center gap-2"
           >
-            <span>🤍</span> Démarrer un Exercice de Respiration
+            <span>📋</span> Démarrer un Exercice de Respiration
           </Link>
           <span className="text-sm text-gray-500 mt-3">(Cohérence Cardiaque 5-5 - Accès immédiat)</span>
         </div>
@@ -31,34 +31,34 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {/* Carte 1 : Relaxation */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 flex flex-col">
+          <div className="bg-white border border-cesi-border overflow-hidden flex flex-col">
             <div className="bg-cesi-secondary h-32 flex items-center justify-center">
-              <h3 className="text-3xl font-bold text-white">Relaxation</h3>
+              <h3 className="text-2xl font-bold text-white">Relaxation</h3>
             </div>
             <div className="p-5 flex-1">
-              <span className="bg-blue-50 text-cesi-secondary text-xs font-bold px-3 py-1 rounded-full uppercase">Gestion du stress</span>
+              <span className="bg-cesi-muted text-cesi-secondary text-xs font-bold px-3 py-1 uppercase border border-cesi-secondary">Gestion du stress</span>
               <p className="font-bold text-cesi-dark mt-4 text-lg">Les 5 étapes pour vaincre le stress chronique</p>
             </div>
           </div>
 
           {/* Carte 2 : Sommeil */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 flex flex-col">
+          <div className="bg-white border border-cesi-border overflow-hidden flex flex-col">
             <div className="bg-cesi-primary h-32 flex items-center justify-center">
-              <h3 className="text-3xl font-bold text-white">Sommeil</h3>
+              <h3 className="text-2xl font-bold text-white">Sommeil</h3>
             </div>
             <div className="p-5 flex-1">
-              <span className="bg-green-50 text-cesi-primary text-xs font-bold px-3 py-1 rounded-full uppercase">Sommeil</span>
+              <span className="bg-cesi-muted text-cesi-primary text-xs font-bold px-3 py-1 uppercase border border-cesi-primary">Sommeil</span>
               <p className="font-bold text-cesi-dark mt-4 text-lg">Améliorer la qualité de votre sommeil</p>
             </div>
           </div>
 
           {/* Carte 3 : Respiration */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 flex flex-col">
+          <div className="bg-white border border-cesi-border overflow-hidden flex flex-col">
             <div className="bg-cesi-accent h-32 flex items-center justify-center">
-              <h3 className="text-3xl font-bold text-white">Respiration</h3>
+              <h3 className="text-2xl font-bold text-white">Respiration</h3>
             </div>
             <div className="p-5 flex-1">
-              <span className="bg-red-50 text-cesi-accent text-xs font-bold px-3 py-1 rounded-full uppercase">Cohérence cardiaque</span>
+              <span className="bg-cesi-muted text-cesi-accent text-xs font-bold px-3 py-1 uppercase border border-cesi-accent">Cohérence cardiaque</span>
               <p className="font-bold text-cesi-dark mt-4 text-lg">La technique du 5-5 : un guide simple</p>
             </div>
           </div>
