@@ -56,12 +56,12 @@ class RespirationSessionsApiTest extends TestCase
         $response = $this->postJson('/api/sessions', [
             'duration' => 60,
             'breathingRate' => 6,
-            'id_user' => $user->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $user->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
 
         $response->assertCreated();
-        $this->assertDatabaseHas('respiration_sessions', ['id_user' => $user->id, 'id_Exercise' => $exercise->id]);
+        $this->assertDatabaseHas('respiration_sessions', ['id_user' => $user->getKey(), 'id_Exercise' => $exercise->getKey()]);
     }
 
     public function test_authenticated_user_cannot_store_for_another_user(): void
@@ -76,8 +76,8 @@ class RespirationSessionsApiTest extends TestCase
         $response = $this->postJson('/api/sessions', [
             'duration' => 30,
             'breathingRate' => 5,
-            'id_user' => $other->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $other->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
 
         $response->assertForbidden();
@@ -93,8 +93,8 @@ class RespirationSessionsApiTest extends TestCase
 
         $response = $this->postJson('/api/sessions', [
             'breathingRate' => 5,
-            'id_user' => $user->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $user->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
 
         $response->assertStatus(422)->assertJsonValidationErrors(['duration']);
@@ -110,7 +110,7 @@ class RespirationSessionsApiTest extends TestCase
         $response = $this->postJson('/api/sessions', [
             'duration' => 50,
             'breathingRate' => 6,
-            'id_user' => $user->id,
+            'id_user' => $user->getKey(),
             'id_Exercise' => 9999,
         ]);
 
@@ -127,23 +127,23 @@ class RespirationSessionsApiTest extends TestCase
         RespirationSession::query()->create([
             'duration' => 40,
             'breathingRate' => 6,
-            'id_user' => $user->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $user->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
         RespirationSession::query()->create([
             'duration' => 35,
             'breathingRate' => 5,
-            'id_user' => $other->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $other->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
 
         Sanctum::actingAs($user);
 
-        $response = $this->getJson('/api/sessions?id_user=' . $other->id);
+        $response = $this->getJson('/api/sessions?id_user=' . $other->getKey());
 
         $response->assertOk();
         $this->assertCount(1, $response->json());
-        $this->assertSame($user->id, $response->json()[0]['id_user']);
+        $this->assertSame($user->getKey(), $response->json()[0]['id_user']);
     }
 
     public function test_guest_index_can_filter_by_user(): void
@@ -156,21 +156,21 @@ class RespirationSessionsApiTest extends TestCase
         RespirationSession::query()->create([
             'duration' => 20,
             'breathingRate' => 4,
-            'id_user' => $user->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $user->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
         RespirationSession::query()->create([
             'duration' => 22,
             'breathingRate' => 4,
-            'id_user' => $other->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $other->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
 
-        $response = $this->getJson('/api/sessions?id_user=' . $user->id);
+        $response = $this->getJson('/api/sessions?id_user=' . $user->getKey());
 
         $response->assertOk();
         $this->assertCount(1, $response->json());
-        $this->assertSame($user->id, $response->json()[0]['id_user']);
+        $this->assertSame($user->getKey(), $response->json()[0]['id_user']);
     }
 
     public function test_guest_index_without_filter_returns_all_sessions(): void
@@ -183,14 +183,14 @@ class RespirationSessionsApiTest extends TestCase
         RespirationSession::query()->create([
             'duration' => 20,
             'breathingRate' => 4,
-            'id_user' => $user->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $user->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
         RespirationSession::query()->create([
             'duration' => 22,
             'breathingRate' => 4,
-            'id_user' => $other->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $other->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
 
         $response = $this->getJson('/api/sessions');
@@ -208,8 +208,8 @@ class RespirationSessionsApiTest extends TestCase
         $response = $this->postJson('/api/sessions', [
             'duration' => 66,
             'breathingRate' => 6,
-            'id_user' => $user->id,
-            'id_Exercise' => $exercise->id,
+            'id_user' => $user->getKey(),
+            'id_Exercise' => $exercise->getKey(),
         ]);
 
         $response->assertUnauthorized();

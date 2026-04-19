@@ -8,6 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property int $id
+ * @property string $firstname
+ * @property string $lastname
+ * @property string $email
+ * @property string $passwordHash
+ * @property int $id_role
+ * @property bool $isActive
+ * @property bool $isSuperAdmin
+ */
 class User extends Authenticatable {
     use HasApiTokens, HasFactory;
 

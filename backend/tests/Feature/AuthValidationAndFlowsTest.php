@@ -194,7 +194,7 @@ class AuthValidationAndFlowsTest extends TestCase
         $response->assertOk();
 
         $user->refresh();
-        $this->assertTrue(Hash::check('newpassword123', $user->passwordHash));
+        $this->assertTrue(Hash::check('newpassword123', (string) $user->getAttribute('passwordHash')));
     }
 
     public function test_update_profile_rejects_duplicate_email(): void
