@@ -32,8 +32,11 @@ class User extends Authenticatable {
      * Vérifie si l'utilisateur a le rôle d'administrateur.
      */
     public function isAdmin(): bool {
-        // Accède à la relation 'role' et vérifie la propriété 'nom'
-        return $this->role && $this->role->nom === 'admin';
+        if ((int) $this->id_role === 1) {
+            return true;
+        }
+
+        return $this->role && strtolower((string) $this->role->nom) === 'admin';
     }
 
     public function favoriteArticles()

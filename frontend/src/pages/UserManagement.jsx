@@ -11,22 +11,22 @@ function UserManagement() {
     try {
       setLoading(true);
       const res = await api.get('/admin/users');
-      // On filtre l'utilisateur courant de la liste pour qu'il ne puisse pas se supprimer
-      setUsers(res.data.filter(u => u.id !== currentUser.id));
+      const currentId = currentUser?.id;
+      setUsers(currentId ? res.data.filter(u => u.id !== currentId) : res.data);
       setError('');
-    } catch (err) {
+    } catch {
       setError('Impossible de charger les utilisateurs.');
     } finally {
       setLoading(false);
     }
-  }, [api, currentUser.id]);
+  }, [api, currentUser?.id]);
 
   const deleteUser = async (id) => {
     if (window.confirm("Voulez-vous vraiment supprimer cet utilisateur ? Cette action est irréversible.")) {
       try {
         await api.delete(`/admin/users/${id}`);
         setUsers(prevUsers => prevUsers.filter(u => u.id !== id));
-      } catch (err) {
+      } catch {
         setError('Erreur lors de la suppression de l\'utilisateur.');
       }
     }
@@ -38,7 +38,7 @@ function UserManagement() {
       setUsers(prevUsers => 
         prevUsers.map(u => u.id === id ? res.data : u)
       );
-    } catch (err) {
+    } catch {
       setError('Erreur lors du changement de statut de l\'utilisateur.');
     }
   };
@@ -66,11 +66,11 @@ function UserManagement() {
             </thead>
             <tbody>
               {users.map(u => (
-                <tr key={u.id} className={`border-b hover:bg-gray-50 ${!u.is_active ? 'opacity-50' : ''}`}>
-                  <td className="p-4 font-medium">{u.name}</td>
+                <tr key={u.id} className={`border-b hover:bg-gray-50 ${!u.isActive ? 'opacity-50' : ''}`}>
+                  <td className="p-4 font-medium">{`${u.firstname} ${u.lastname}`}</td>
                   <td className="p-4 text-gray-600">{u.email}</td>
                   <td className="p-4">
-                    {u.role.nom === 'admin' ? (
+                    {(u.role?.nom === 'admin' || u.id_role === 1) ? (
                       <span className="font-bold text-red-600">🔴 Admin</span>
                     ) : (
                       <span className="text-gray-700">👤 Utilisateur</span>
@@ -78,13 +78,13 @@ function UserManagement() {
                   </td>
                   <td className="p-4 space-x-4">
                     {/* On ne peut pas modifier un admin */}
-                    {u.role.nom !== 'admin' && (
+                    {(u.role?.nom !== 'admin' && u.id_role !== 1) && (
                       <>
                         <button 
                           onClick={() => toggleUserStatus(u.id)} 
-                          className={`font-bold ${u.is_active ? 'text-orange-500 hover:underline' : 'text-green-500 hover:underline'}`}
+                          className={`font-bold ${u.isActive ? 'text-orange-500 hover:underline' : 'text-green-500 hover:underline'}`}
                         >
-                          {u.is_active ? 'Désactiver' : 'Activer'}
+                          {u.isActive ? 'Désactiver' : 'Activer'}
                         </button>
                         <button onClick={() => deleteUser(u.id)} className="text-red-500 hover:underline font-bold">Supprimer</button>
                       </>

@@ -45,8 +45,9 @@ export default function Register() {
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex gap-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-cesi-dark mb-2">Prénom</label>
+            <label htmlFor="register-firstname" className="block text-sm font-medium text-cesi-dark mb-2">Prénom</label>
             <input 
+              id="register-firstname"
               type="text" 
               placeholder="Jean"
               value={firstName}
@@ -55,8 +56,9 @@ export default function Register() {
             />
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-cesi-dark mb-2">Nom</label>
+            <label htmlFor="register-lastname" className="block text-sm font-medium text-cesi-dark mb-2">Nom</label>
             <input 
+              id="register-lastname"
               type="text" 
               placeholder="Dupont"
               value={lastName}
@@ -67,8 +69,9 @@ export default function Register() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cesi-dark mb-2">Adresse e-mail</label>
+          <label htmlFor="register-email" className="block text-sm font-medium text-cesi-dark mb-2">Adresse e-mail</label>
           <input 
+            id="register-email"
             type="email" 
             placeholder="votre@email.fr"
             value={email}
@@ -78,8 +81,9 @@ export default function Register() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cesi-dark mb-2">Mot de passe</label>
+          <label htmlFor="register-password" className="block text-sm font-medium text-cesi-dark mb-2">Mot de passe</label>
           <input 
+            id="register-password"
             type="password" 
             placeholder="••••••••"
             value={password}
@@ -89,8 +93,9 @@ export default function Register() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cesi-dark mb-2">Confirmation du mot de passe</label>
+          <label htmlFor="register-password-confirmation" className="block text-sm font-medium text-cesi-dark mb-2">Confirmation du mot de passe</label>
           <input 
+            id="register-password-confirmation"
             type="password" 
             placeholder="••••••••"
             value={passwordConfirmation}

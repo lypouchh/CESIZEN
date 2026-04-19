@@ -133,7 +133,48 @@ class AuthController extends Controller
 
     public function listUsers()
     {
-        return response()->json(User::all());
+        return response()->json(User::with('role')->get());
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+        ]);
+
+        $user->firstname = $request->firstname;
+        $user->lastname = $request->lastname;
+        $user->email = $request->email;
+        $user->save();
+
+        return response()->json($user);
+    }
+
+    public function destroyAccount(Request $request)
+    {
+        $user = $request->user();
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json(['message' => 'Compte supprimé.']);
+    }
+
+    public function toggleUserStatus($id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->id_role === 1) {
+            return response()->json(['message' => 'Impossible de modifier un admin.'], 403);
+        }
+
+        $user->isActive = !$user->isActive;
+        $user->save();
+
+        return response()->json($user);
     }
 
     public function deleteUser($id)

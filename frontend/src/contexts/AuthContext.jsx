@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
@@ -32,12 +33,18 @@ export const AuthProvider = ({ children }) => {
   
   const register = async (firstname, lastname, email, password, password_confirmation) => {
     try {
-      // On combine prénom et nom pour correspondre au champ 'name' du backend
-      const name = `${firstname} ${lastname}`;
-      const response = await api.post('/register', { name, email, password, password_confirmation });
-      
-      // Après l'inscription, on pourrait vouloir connecter l'utilisateur directement
-      // Pour l'instant, on se contente de ne pas lever d'erreur
+      const response = await api.post('/register', {
+        firstname,
+        lastname,
+        email,
+        password,
+        password_confirmation,
+      });
+
+      const { user, token } = response.data;
+      localStorage.setItem('token', token);
+      setToken(token);
+      setUser(user);
       return true;
     } catch (error) {
       console.error("Erreur inscription:", error.response?.data || error.message);
@@ -63,7 +70,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
         await api.post('/logout');
-    } catch (e) {
+    } catch {
         // On ignore les erreurs de logout (ex: token déjà expiré)
     }
     localStorage.removeItem('token');
@@ -73,14 +80,26 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (userData) => {
     try {
-      // On ne met à jour que les champs modifiables
-      const { name, email } = userData;
-      const response = await api.put('/user', { name, email });
-      setUser(response.data); // Met à jour l'état global de l'utilisateur
+      const { firstname, lastname, email } = userData;
+      const response = await api.put('/user', { firstname, lastname, email });
+      setUser(response.data);
       return response.data;
     } catch (error) {
       console.error("Erreur mise à jour profil:", error.response?.data || error.message);
       throw error;
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      await api.delete('/user');
+    } catch (error) {
+      console.error("Erreur suppression de compte:", error.response?.data || error.message);
+      throw error;
+    } finally {
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
     }
   };
 
@@ -98,7 +117,7 @@ export const AuthProvider = ({ children }) => {
   }, [token, user]); // On ajoute 'user' pour éviter une boucle si l'utilisateur est déjà chargé
 
   return (
-    <AuthContext.Provider value={{ user, token, api, register, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, api, register, login, logout, updateUser, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

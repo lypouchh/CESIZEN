@@ -11,6 +11,9 @@ import ChangePassword from './pages/ChangePassword';
 import AddArticle from './pages/AddArticle';
 import AdminRegister from './pages/AdminRegister';
 import AdminDashboard from './pages/AdminDashboard';
+import UserManagement from './pages/UserManagement';
+import ArticleManagement from './pages/ArticleManagement';
+import EditArticle from './pages/EditArticle';
 import Profile from './pages/Profile';
 import Articles from './pages/Articles';
 import ArticleDetail from './pages/ArticleDetail';
@@ -49,7 +52,8 @@ function Navigation() {
             {/* Lien Admin visible uniquement pour id_role === 1 */}
             {user?.id_role === 1 && (
               <div className="flex gap-4 items-center">
-                <Link to="/admin/dashboard" className="text-red-600 font-medium hover:underline">Administration</Link>
+                <Link to="/admin/users" className="text-red-600 font-medium hover:underline">Utilisateurs</Link>
+                <Link to="/admin/articles" className="text-red-600 font-medium hover:underline">Articles</Link>
                 <Link to="/admin/add-article" className="text-red-600 font-medium hover:underline">Publier</Link>
               </div>
             )}
@@ -139,6 +143,10 @@ function App() {
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/admin/register" element={<AdminRegister />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/articles" element={<ArticleManagement />} />
+            <Route path="/admin/articles/add" element={<AddArticle />} />
+            <Route path="/admin/articles/edit/:id" element={<EditArticle />} />
             <Route path="/admin/add-article" element={<AddArticle />} />
           </Routes>
         </main>

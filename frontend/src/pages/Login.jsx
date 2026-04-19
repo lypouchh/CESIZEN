@@ -36,8 +36,9 @@ export default function Login() {
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div>
-          <label className="block text-sm font-medium text-cesi-dark mb-2">Adresse e-mail</label>
+          <label htmlFor="login-email" className="block text-sm font-medium text-cesi-dark mb-2">Adresse e-mail</label>
           <input 
+            id="login-email"
             type="email" 
             placeholder="votre@email.fr"
             value={email}
@@ -47,8 +48,9 @@ export default function Login() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cesi-dark mb-2">Mot de passe</label>
+          <label htmlFor="login-password" className="block text-sm font-medium text-cesi-dark mb-2">Mot de passe</label>
           <input 
+            id="login-password"
             type="password" 
             placeholder="••••••••"
             value={password}
