@@ -11,11 +11,12 @@ export default function Exercise() {
   const [selectedMode, setSelectedMode] = useState('55');
   const [isActive, setIsActive] = useState(false);
   const [phase, setPhase] = useState('Prêt ?'); // Inhale, Hold, Exhale
-  const [timer, setTimer] = useState(0);
   const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [targetRepetitions, setTargetRepetitions] = useState(5);
+  const [currentRepetition, setCurrentRepetition] = useState(0);
   const [message, setMessage] = useState('');
   
-  const { user } = useAuth();
+  const { user, api } = useAuth();
   
   // On récupère les infos du mode actuel
   const currentMode = MODES[selectedMode];
@@ -27,51 +28,42 @@ export default function Exercise() {
     try {
       const exerciseId = selectedMode === '55' ? 1 : selectedMode === '46' ? 2 : 3; // Mapping des modes aux exercises
 
-      const response = await fetch('http://localhost:8000/api/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          duration: Math.round(duration),
-          breathingRate: breathingRate,
-          id_user: user.id,
-          id_Exercise: exerciseId
-        })
+      await api.post('/sessions', {
+        duration: Math.round(duration),
+        breathingRate,
+        id_user: user.id,
+        id_Exercise: exerciseId,
       });
 
-      if (response.ok) {
-        setMessage('✅ Session sauvegardée avec succès !');
-        setTimeout(() => setMessage(''), 3000);
-      } else {
-        console.error('Erreur sauvegarde session');
-      }
+      setMessage('✅ Session sauvegardée avec succès !');
+      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
     }
   };
 
   // Fonction pour démarrer/arrêter l'exercice
+  const completeSession = () => {
+    const duration = sessionStartTime ? (Date.now() - sessionStartTime) / 1000 : 0;
+    const breathingRate = selectedMode === '55' ? 6 : selectedMode === '46' ? 5 : 4;
+
+    if (duration > 10 && user) {
+      saveSession(duration, breathingRate);
+    }
+
+    setSessionStartTime(null);
+    setIsActive(false);
+  };
+
   const toggleExercise = () => {
     if (isActive) {
-      // Arrêter l'exercice et sauvegarder
-      const duration = sessionStartTime ? (Date.now() - sessionStartTime) / 1000 : 0;
-      const breathingRate = selectedMode === '55' ? 6 : selectedMode === '46' ? 5 : 4; // respirations/minute
-      
-      if (duration > 10 && user) { // Sauvegarder seulement si > 10 secondes et utilisateur connecté
-        saveSession(duration, breathingRate);
-      }
-      
-      setSessionStartTime(null);
+      completeSession();
     } else {
-      // Démarrer l'exercice
       setSessionStartTime(Date.now());
+      setCurrentRepetition(0);
       setMessage('');
+      setIsActive(true);
     }
-    
-    setIsActive(!isActive);
   };
 
   // Calcul du scale factor pour une animation plus fluide
@@ -90,11 +82,19 @@ export default function Exercise() {
     let interval = null;
     let t1 = null;
     let t2 = null;
+    let completedCycles = 0;
 
     if (isActive) {
       const mode = currentMode;
       
       const runCycle = () => {
+        completedCycles += 1;
+        setCurrentRepetition(completedCycles);
+
+        if (completedCycles > targetRepetitions) {
+          return;
+        }
+
         setPhase('Inspirez');
         t1 = setTimeout(() => {
           if (mode.hold > 0) {
@@ -110,7 +110,15 @@ export default function Exercise() {
 
       runCycle();
       const cycleDuration = (mode.inhale + mode.hold + mode.exhale) * 1000;
-      interval = setInterval(runCycle, cycleDuration);
+      interval = setInterval(() => {
+        if (completedCycles >= targetRepetitions) {
+          clearInterval(interval);
+          setPhase('Terminé');
+          completeSession();
+          return;
+        }
+        runCycle();
+      }, cycleDuration);
     } else {
       setPhase('Prêt ?');
     }
@@ -121,7 +129,7 @@ export default function Exercise() {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [isActive, selectedMode, currentMode]); // Ajout de currentMode aux dépendances
+  }, [isActive, selectedMode, currentMode, targetRepetitions]);
 
   return (
     <div className="flex flex-col items-center justify-between min-h-[80vh] p-8">
@@ -162,6 +170,26 @@ export default function Exercise() {
         <p className="text-center text-xs text-gray-500 italic mb-2">
           Mode : {currentMode.label}
         </p>
+
+        <div>
+          <label htmlFor="repetitions" className="block text-xs text-gray-600 mb-1">Nombre de répétitions</label>
+          <input
+            id="repetitions"
+            type="number"
+            min={1}
+            max={20}
+            value={targetRepetitions}
+            onChange={(e) => setTargetRepetitions(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+            className="w-full p-2 border border-cesi-border text-sm"
+            disabled={isActive}
+          />
+        </div>
+
+        {isActive && (
+          <p className="text-center text-xs text-blue-600 font-medium">
+            Répétition {Math.min(currentRepetition, targetRepetitions)} / {targetRepetitions}
+          </p>
+        )}
 
         <button 
           onClick={toggleExercise}

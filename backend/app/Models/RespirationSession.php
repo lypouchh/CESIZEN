@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RespirationSession extends Model {
-    protected $table = 'RespirationSession';
+    protected $table = 'respiration_sessions';
     public $timestamps = false;
 
     protected $fillable = ['date', 'duration', 'breathingRate', 'id_user', 'id_Exercise'];

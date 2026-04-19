@@ -51,7 +51,19 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@cesizen.fr',
             'passwordHash' => bcrypt('admin123'),
             'id_role' => 1,
-            'isActive' => true
+            'isActive' => true,
+            'isSuperAdmin' => true,
+        ]);
+
+        // Compte utilisateur de démonstration
+        User::create([
+            'firstname' => 'User',
+            'lastname' => 'Demo',
+            'email' => 'user@cesizen.fr',
+            'passwordHash' => bcrypt('user12345'),
+            'id_role' => 2,
+            'isActive' => true,
+            'isSuperAdmin' => false,
         ]);
 
         // Créer des articles de démonstration

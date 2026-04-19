@@ -10,7 +10,13 @@ class RespirationSessionController extends Controller {
     public function index(Request $request) {
         $userId = $request->query('id_user');
         $query = RespirationSession::with('exercise');
-        if ($userId) $query->where('id_user', $userId);
+
+        if ($request->user()) {
+            $query->where('id_user', $request->user()->id);
+        } elseif ($userId) {
+            $query->where('id_user', $userId);
+        }
+
         return response()->json($query->get());
     }
 
@@ -18,9 +24,14 @@ class RespirationSessionController extends Controller {
         $validated = $request->validate([
             'duration' => 'required|integer',
             'breathingRate' => 'required|integer',
-            'id_user' => 'required|exists:User,id',
-            'id_Exercise' => 'required|exists:Exercise,id'
+            'id_user' => 'required|exists:users,id',
+            'id_Exercise' => 'required|exists:exercises,id'
         ]);
+
+        if ($request->user() && (int) $request->user()->id !== (int) $validated['id_user']) {
+            return response()->json(['message' => 'Action non autorisée.'], 403);
+        }
+
         return response()->json(RespirationSession::create($validated), 201);
     }
 }

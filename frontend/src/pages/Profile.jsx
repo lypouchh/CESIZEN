@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -33,6 +33,11 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
     } catch (err) {
       setError(err.response?.data?.message || 'Impossible de supprimer le compte.');
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/logged-out');
   };
 
   return (
@@ -109,7 +114,7 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
           </button>
           <button
             type="button"
-            onClick={logout}
+            onClick={handleLogout}
             className="mt-4 w-full bg-cesi-muted text-cesi-dark border border-cesi-border py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
           >
             Se déconnecter
@@ -121,19 +126,140 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
 }
 
 export default function Profile() {
-  const { user, logout, updateUser, deleteAccount } = useAuth();
+  const { user, logout, updateUser, deleteAccount, api } = useAuth();
   const navigate = useNavigate();
+  const [sessions, setSessions] = useState([]);
+  const [sessionsLoaded, setSessionsLoaded] = useState(false);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await api.get(`/sessions?id_user=${user?.id}`);
+      setSessions(res.data || []);
+    } catch {
+      setSessions([]);
+    } finally {
+      setSessionsLoaded(true);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchSessions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const now = useMemo(() => new Date(), []);
+
+  const { totalsByExercise, totalAll, calendarCells } = useMemo(() => {
+    const totals = sessions.reduce((acc, session) => {
+      const name = session.exercise?.name || `Exercice #${session.id_Exercise}`;
+      acc[name] = (acc[name] || 0) + 1;
+      return acc;
+    }, {});
+
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const firstWeekday = (firstDay.getDay() + 6) % 7;
+
+    const byDay = sessions.reduce((acc, session) => {
+      const dateKey = new Date(session.date).toISOString().slice(0, 10);
+      if (!acc[dateKey]) {
+        acc[dateKey] = { total: 0, byExercise: {} };
+      }
+      const exerciseName = session.exercise?.name || `Exercice #${session.id_Exercise}`;
+      acc[dateKey].total += 1;
+      acc[dateKey].byExercise[exerciseName] = (acc[dateKey].byExercise[exerciseName] || 0) + 1;
+      return acc;
+    }, {});
+
+    const cells = [];
+    for (let i = 0; i < firstWeekday; i += 1) {
+      cells.push(null);
+    }
+    for (let day = 1; day <= lastDay.getDate(); day += 1) {
+      const d = new Date(year, month, day);
+      const dateKey = d.toISOString().slice(0, 10);
+      cells.push({ day, dateKey, info: byDay[dateKey] || null });
+    }
+
+    return {
+      totalsByExercise: totals,
+      totalAll: sessions.length,
+      calendarCells: cells,
+    };
+  }, [sessions, now]);
 
   if (!user) return <div className="p-10 text-center">Chargement...</div>;
 
   return (
-    <ProfileForm
-      key={user.id}
-      user={user}
-      logout={logout}
-      updateUser={updateUser}
-      deleteAccount={deleteAccount}
-      navigate={navigate}
-    />
+    <div className="space-y-6">
+      <ProfileForm
+        key={user.id}
+        user={user}
+        logout={logout}
+        updateUser={updateUser}
+        deleteAccount={deleteAccount}
+        navigate={navigate}
+      />
+
+      <section className="max-w-3xl mx-auto bg-white p-6 border border-cesi-border shadow-sm">
+        <h2 className="text-2xl font-bold text-cesi-dark mb-4">Tableau de bord respiration</h2>
+        {!sessionsLoaded && <p className="text-sm text-gray-500 mb-3">Chargement des sessions...</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+          <div className="p-4 border border-cesi-border bg-blue-50">
+            <p className="text-sm text-gray-600">Total toutes séances</p>
+            <div className="mt-2">
+              <span className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-blue-600 text-white text-lg font-bold">
+                {totalAll}
+              </span>
+            </div>
+          </div>
+          {Object.entries(totalsByExercise).map(([name, total]) => (
+            <div key={name} className="p-4 border border-cesi-border bg-gray-50">
+              <p className="text-sm text-gray-600">{name}</p>
+              <div className="mt-2">
+                <span className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-cesi-primary text-white text-lg font-bold">
+                  {total}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {sessionsLoaded && totalAll === 0 && (
+          <p className="text-sm text-gray-500 mb-4">Aucune séance enregistrée pour le moment. Lance un exercice et reviens ici.</p>
+        )}
+
+        <h3 className="text-lg font-bold text-cesi-dark mb-3">Calendrier des séances ({now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' })})</h3>
+        <p className="text-xs text-gray-500 mb-3">Les jours avec séance sont entourés en bleu. Survole un jour pour voir le détail par type d'exercice.</p>
+        <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-gray-500 mb-2">
+          <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+        </div>
+        <div className="grid grid-cols-7 gap-2">
+          {calendarCells.map((cell, idx) => {
+            if (!cell) {
+              return <div key={`empty-${idx}`} className="h-10 border border-transparent" />;
+            }
+
+            const tooltip = cell.info
+              ? `${cell.info.total} exercice(s) fait(s)`
+              : 'Aucune séance';
+
+            return (
+              <div
+                key={cell.dateKey}
+                title={tooltip}
+                className={`w-10 h-10 flex items-center justify-center rounded-full border text-sm mx-auto transition-colors ${cell.info ? 'border-blue-600 bg-blue-600 text-white font-bold hover:bg-blue-700' : 'border-cesi-border text-gray-600 hover:bg-gray-100'}`}
+              >
+                {cell.day}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
 }

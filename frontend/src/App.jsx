@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -17,6 +17,7 @@ import EditArticle from './pages/EditArticle';
 import Profile from './pages/Profile';
 import Articles from './pages/Articles';
 import ArticleDetail from './pages/ArticleDetail';
+import LoggedOut from './pages/LoggedOut';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // On crée un composant séparé pour la Navigation pour que le code reste clair
@@ -24,9 +25,16 @@ function Navigation() {
   // state pour savoir si le menu mobile est ouvert (true) ou fermé (false)
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   // Fonction pour inverser l'état du menu
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false);
+    navigate('/logged-out');
+  };
 
   return (
     <nav className="bg-white border-b border-cesi-border sticky top-0 z-50">
@@ -63,7 +71,7 @@ function Navigation() {
                 <Link to="/profile" className="bg-cesi-primary text-white px-4 py-2 font-medium border border-cesi-primary hover:bg-white hover:text-cesi-primary transition flex items-center gap-2">
                   <span>👤</span> {user.firstname}
                 </Link>
-                <button onClick={logout} className="text-gray-600 text-sm hover:text-red-600 transition">Déconnexion</button>
+                <button onClick={handleLogout} className="text-gray-600 text-sm hover:text-red-600 transition">Déconnexion</button>
               </div>
             ) : (
               <div className="flex items-center gap-4">
@@ -141,6 +149,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/logged-out" element={<LoggedOut />} />
             <Route path="/admin/register" element={<AdminRegister />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<UserManagement />} />

@@ -14,7 +14,12 @@ class User extends Authenticatable {
    // protected $table = 'User';
     // public $timestamps = false;
 
-    protected $fillable = ['firstname', 'lastname', 'email', 'passwordHash', 'id_role', 'isActive'];
+    protected $fillable = ['firstname', 'lastname', 'email', 'passwordHash', 'id_role', 'isActive', 'isSuperAdmin'];
+
+    protected $casts = [
+        'isActive' => 'boolean',
+        'isSuperAdmin' => 'boolean',
+    ];
 
     public function role(): BelongsTo {
         return $this->belongsTo(Role::class, 'id_role');
@@ -37,6 +42,10 @@ class User extends Authenticatable {
         }
 
         return $this->role && strtolower((string) $this->role->nom) === 'admin';
+    }
+
+    public function isSuperAdmin(): bool {
+        return (bool) $this->isSuperAdmin;
     }
 
     public function favoriteArticles()

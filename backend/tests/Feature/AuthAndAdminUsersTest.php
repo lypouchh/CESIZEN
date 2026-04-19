@@ -73,8 +73,10 @@ class AuthAndAdminUsersTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['email' => 'alice@example.com'])
-            ->assertJsonFragment(['email' => 'admin@example.com']);
+            ->assertJsonPath('currentAdmin.isSuperAdmin', false)
+            ->assertJsonFragment(['email' => 'alice@example.com']);
+
+        $this->assertCount(1, $response->json('users'));
     }
 
     public function test_non_admin_cannot_list_users(): void

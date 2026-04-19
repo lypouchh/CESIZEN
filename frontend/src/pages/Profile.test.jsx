@@ -91,4 +91,44 @@ describe('Profile page', () => {
     expect(deleteAccountMock).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
+
+  test('logs out and redirects to the logged out page', async () => {
+    const logoutMock = vi.fn();
+    useAuth.mockReturnValue({
+      user: { id: 1, firstname: 'Admin', lastname: 'User', email: 'admin@example.com' },
+      logout: logoutMock,
+      updateUser: vi.fn(),
+      deleteAccount: vi.fn(),
+      api: { get: vi.fn().mockResolvedValue({ data: [] }) },
+    });
+
+    render(
+      <MemoryRouter>
+        <Profile />
+      </MemoryRouter>
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Se déconnecter/i }));
+
+    expect(logoutMock).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('/logged-out');
+  });
+
+  test('shows no session message when dashboard has no sessions', async () => {
+    useAuth.mockReturnValue({
+      user: { id: 2, firstname: 'No', lastname: 'Session', email: 'none@example.com' },
+      logout: vi.fn(),
+      updateUser: vi.fn(),
+      deleteAccount: vi.fn(),
+      api: { get: vi.fn().mockResolvedValue({ data: [] }) },
+    });
+
+    render(
+      <MemoryRouter>
+        <Profile />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText(/Aucune séance enregistrée pour le moment/i)).toBeInTheDocument();
+  });
 });

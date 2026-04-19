@@ -60,4 +60,22 @@ describe('Login page', () => {
 
     expect(await screen.findByText(/Les identifiants sont incorrects\./i)).toBeInTheDocument();
   });
+
+  test('shows fallback error message when backend message is unavailable', async () => {
+    const loginMock = vi.fn().mockRejectedValue(new Error('Network error'));
+    useAuth.mockReturnValue({ login: loginMock });
+
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    );
+
+    await userEvent.type(screen.getByLabelText(/Adresse e-mail/i), 'user@example.com');
+    await userEvent.type(screen.getByLabelText(/Mot de passe/i), 'password123');
+    await userEvent.click(screen.getByRole('button', { name: /Se connecter/i }));
+
+    expect(await screen.findByText(/Impossible de se connecter\. Vérifiez le backend\./i)).toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });

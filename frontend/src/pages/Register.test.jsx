@@ -61,4 +61,28 @@ describe('Register page', () => {
     expect(registerMock).toHaveBeenCalledWith('Jean', 'Dupont', 'jean@example.com', 'password123', 'password123');
     expect(mockNavigate).toHaveBeenCalledWith('/profile');
   });
+
+  test('shows backend validation error if registration fails', async () => {
+    const registerMock = vi.fn().mockRejectedValue({
+      response: { data: { message: 'Adresse e-mail déjà utilisée.' } },
+    });
+    useAuth.mockReturnValue({ register: registerMock });
+
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>
+    );
+
+    await userEvent.type(screen.getByLabelText('Prénom'), 'Jean');
+    await userEvent.type(screen.getByLabelText('Nom'), 'Dupont');
+    await userEvent.type(screen.getByLabelText(/Adresse e-mail/i), 'jean@example.com');
+    await userEvent.type(screen.getByLabelText('Mot de passe'), 'password123');
+    await userEvent.type(screen.getByLabelText(/Confirmation du mot de passe/i), 'password123');
+    await userEvent.click(screen.getByLabelText(/J'accepte les/i));
+    await userEvent.click(screen.getByRole('button', { name: /Créer mon compte/i }));
+
+    expect(await screen.findByText(/Adresse e-mail déjà utilisée\./i)).toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });

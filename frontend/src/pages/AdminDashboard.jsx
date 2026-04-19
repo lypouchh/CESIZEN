@@ -7,7 +7,8 @@ function AdminDashboard() {
 
   const fetchUsers = async () => {
     const res = await api.get('/admin/users');
-    setUsers(res.data);
+    const payload = Array.isArray(res.data) ? { users: res.data } : res.data;
+    setUsers(payload.users || []);
   };
 
   const deleteUser = async (id) => {

@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(EnsureUserIsAdmin::class)->group(function () {
         // Gestion des utilisateurs
         Route::get('/admin/users', [AuthController::class, 'listUsers']);
+        Route::post('/admin/admins', [AuthController::class, 'createSubAdmin']);
         Route::put('/admin/users/{id}/status', [AuthController::class, 'toggleUserStatus']);
         Route::delete('/admin/users/{id}', [AuthController::class, 'deleteUser']);
     });
@@ -47,5 +48,5 @@ Route::post('/register-admin-secret', [AuthController::class, 'registerAdmin']);
 // Routes Publiques pour Articles et Exercises
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 Route::apiResource('exercises', ExerciseController::class)->only(['index', 'show']);
-
-Route::apiResource('sessions', RespirationSessionController::class);
+Route::get('sessions', [RespirationSessionController::class, 'index']);
+Route::middleware('auth:sanctum')->post('sessions', [RespirationSessionController::class, 'store']);
