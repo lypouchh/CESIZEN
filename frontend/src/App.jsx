@@ -20,14 +20,11 @@ import ArticleDetail from './pages/ArticleDetail';
 import LoggedOut from './pages/LoggedOut';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-// On crée un composant séparé pour la Navigation pour que le code reste clair
 function Navigation() {
-  // state pour savoir si le menu mobile est ouvert (true) ou fermé (false)
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Fonction pour inverser l'état du menu
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleLogout = async () => {
@@ -37,66 +34,62 @@ function Navigation() {
   };
 
   return (
-    <nav className="bg-white border-b border-cesi-border sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          
-          {/* Logo CESIZEN (à gauche) */}
-          <Link to="/" className="flex-shrink-0 flex items-center gap-2">
-            <span className="text-cesi-primary text-2xl">📋</span>
-            <div className="flex flex-col">
-              <span className="font-bold text-xl text-cesi-primary tracking-wide leading-none">
-                CESI<span className="text-yellow-500">ZEN</span>
-              </span>
+    <header className="sticky top-0 z-50 bg-white border-b border-cesi-border">
+      <div className="h-1 w-full flex">
+        <span className="w-1/3 bg-[#000091]" />
+        <span className="w-1/3 bg-white" />
+        <span className="w-1/3 bg-[#e1000f]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <Link to="/" className="flex items-center gap-3 gov-focus">
+            <div className="h-12 w-1 bg-[#000091]" />
+            <div className="leading-tight">
+              <p className="text-xs uppercase tracking-wide text-gray-600">Republique francaise</p>
+              <p className="text-lg font-bold text-cesi-primary">CESIZEN</p>
+              <p className="text-xs text-gray-500">Service numerique de prevention en sante mentale</p>
             </div>
           </Link>
 
-          {/* Menu Classique (Écrans d'ordinateur - caché sur mobile) */}
-          <div className="hidden md:flex space-x-6 items-center">
-            <Link to="/" className="text-cesi-primary font-medium border-b-2 border-cesi-primary pb-1">Accueil</Link>
-            <Link to="/infos" className="text-gray-600 hover:text-cesi-primary font-medium transition">Informations</Link>
-            <Link to="/exercise" className="text-gray-600 hover:text-cesi-primary font-medium transition">Exercices</Link>
-            
-            {/* Lien Admin visible uniquement pour id_role === 1 */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold" aria-label="Navigation principale">
+            <Link to="/" className="text-cesi-dark hover:text-cesi-primary gov-focus">Accueil</Link>
+            <Link to="/infos" className="text-cesi-dark hover:text-cesi-primary gov-focus">Informations</Link>
+            <Link to="/exercise" className="text-cesi-dark hover:text-cesi-primary gov-focus">Exercices de respiration</Link>
+
             {user?.id_role === 1 && (
               <div className="flex gap-4 items-center">
-                <Link to="/admin/users" className="text-red-600 font-medium hover:underline">Utilisateurs</Link>
-                <Link to="/admin/articles" className="text-red-600 font-medium hover:underline">Articles</Link>
-                <Link to="/admin/add-article" className="text-red-600 font-medium hover:underline">Publier</Link>
+                <Link to="/admin/users" className="text-red-700 hover:underline gov-focus">Utilisateurs</Link>
+                <Link to="/admin/articles" className="text-red-700 hover:underline gov-focus">Articles</Link>
               </div>
             )}
 
             {user ? (
               <div className="flex items-center gap-4">
-                <Link to="/profile" className="bg-cesi-primary text-white px-4 py-2 font-medium border border-cesi-primary hover:bg-white hover:text-cesi-primary transition flex items-center gap-2">
-                  <span>👤</span> {user.firstname}
+                <Link to="/profile" className="gov-button px-4 py-2 gov-focus">
+                  Espace {user.firstname}
                 </Link>
-                <button onClick={handleLogout} className="text-gray-600 text-sm hover:text-red-600 transition">Déconnexion</button>
+                <button onClick={handleLogout} className="text-gray-600 hover:text-red-700 transition gov-focus">Deconnexion</button>
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <Link to="/login" className="text-gray-600 hover:text-cesi-primary font-medium transition">
+                <Link to="/login" className="text-gray-700 hover:text-cesi-primary gov-focus">
                   Connexion
                 </Link>
-                <Link to="/register" className="bg-cesi-accent text-white px-4 py-2 font-medium border border-cesi-accent hover:bg-cesi-primary hover:border-cesi-primary transition">
+                <Link to="/register" className="gov-button px-4 py-2 gov-focus">
                   Inscription
                 </Link>
               </div>
             )}
-          </div>
+          </nav>
 
-          {/* Bouton Menu Burger (Mobile uniquement - caché sur ordinateur) */}
           <div className="md:hidden flex items-center">
-            <button 
-              onClick={toggleMenu} 
-              className="text-cesi-dark hover:text-cesi-primary focus:outline-none p-2"
-            >
-              {/* Icône SVG qui change si c'est ouvert (Croix) ou fermé (Burger) */}
+            <button onClick={toggleMenu} className="text-cesi-dark hover:text-cesi-primary p-2 gov-focus" aria-label="Ouvrir le menu">
               <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> // Croix
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /> // 3 lignes
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 )}
               </svg>
             </button>
@@ -104,38 +97,55 @@ function Navigation() {
         </div>
       </div>
 
-      {/* Menu Déroulant (S'affiche uniquement sur mobile et si isOpen est true) */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full">
-          <div className="px-4 pt-2 pb-6 space-y-2 flex flex-col">
-            <Link to="/" onClick={toggleMenu} className="text-cesi-primary font-bold block px-3 py-3 rounded-md bg-green-50">Accueil</Link>
-            <Link to="/infos" onClick={toggleMenu} className="text-gray-600 font-semibold block px-3 py-3 rounded-md hover:bg-gray-50">Informations</Link>
-            <Link to="/exercise" onClick={toggleMenu} className="text-gray-600 font-semibold block px-3 py-3 rounded-md hover:bg-gray-50">Exercices de Respiration</Link>
+        <nav className="md:hidden bg-white border-t border-cesi-border absolute w-full" aria-label="Navigation mobile">
+          <div className="px-4 py-4 space-y-2 flex flex-col">
+            <Link to="/" onClick={toggleMenu} className="px-3 py-3 border border-transparent hover:border-cesi-border gov-focus">Accueil</Link>
+            <Link to="/infos" onClick={toggleMenu} className="px-3 py-3 border border-transparent hover:border-cesi-border gov-focus">Informations</Link>
+            <Link to="/exercise" onClick={toggleMenu} className="px-3 py-3 border border-transparent hover:border-cesi-border gov-focus">Exercices de respiration</Link>
+
+            {user?.id_role === 1 && (
+              <>
+                <Link to="/admin/users" onClick={toggleMenu} className="px-3 py-3 text-red-700 border border-transparent hover:border-cesi-border gov-focus">Administration utilisateurs</Link>
+                <Link to="/admin/articles" onClick={toggleMenu} className="px-3 py-3 text-red-700 border border-transparent hover:border-cesi-border gov-focus">Administration articles</Link>
+              </>
+            )}
             
             {user ? (
-              <Link to="/profile" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Mon Profil ({user.firstname})</Link>
+              <>
+                <Link to="/profile" onClick={toggleMenu} className="gov-button text-center px-3 py-3 gov-focus">Mon profil ({user.firstname})</Link>
+                <button onClick={handleLogout} className="gov-button-secondary text-center px-3 py-3 gov-focus">Deconnexion</button>
+              </>
             ) : (
               <>
-                <Link to="/login" onClick={toggleMenu} className="bg-cesi-accent text-white font-bold block px-3 py-3 rounded-md text-center mt-4 shadow-sm">Se Connecter</Link>
-                <Link to="/register" onClick={toggleMenu} className="bg-cesi-primary text-white font-bold block px-3 py-3 rounded-md text-center mt-2 shadow-sm">S'Inscrire
-                </Link>
+                <Link to="/login" onClick={toggleMenu} className="gov-button text-center px-3 py-3 gov-focus">Se connecter</Link>
+                <Link to="/register" onClick={toggleMenu} className="gov-button-secondary text-center px-3 py-3 gov-focus">S'inscrire</Link>
               </>
             )}
           </div>
-        </div>
+        </nav>
       )}
-    </nav>
+    </header>
   );
 }
 
-// Composant Principal
+function AppFooter() {
+  return (
+    <footer className="mt-14 border-t border-cesi-border bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-sm text-gray-600">
+        <p className="font-semibold text-cesi-dark">CESIZEN</p>
+        <p className="mt-1">Plateforme de prevention et d'accompagnement autour de la sante mentale.</p>
+      </div>
+    </footer>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Navigation />
-        {/* Le contenu des pages s'affiche ici */}
-        <main>
+        <main className="gov-page">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -159,6 +169,7 @@ function App() {
             <Route path="/admin/add-article" element={<AddArticle />} />
           </Routes>
         </main>
+        <AppFooter />
       </AuthProvider>
     </BrowserRouter>
   );

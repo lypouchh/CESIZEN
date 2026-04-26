@@ -41,17 +41,20 @@ function EditArticle() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <div className="bg-white p-6 shadow-md border">
-        <h2 className="text-2xl font-bold mb-6">Modifier l'article</h2>
+    <div className="max-w-4xl mx-auto">
+      <div className="gov-card">
+        <div className="mb-6">
+          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Administration &rsaquo; Articles</p>
+          <h2 className="text-2xl font-bold text-cesi-primary">Modifier l'article</h2>
+        </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">Titre</label>
+            <label htmlFor="title" className="block text-sm font-medium text-cesi-dark mb-1">Titre</label>
             <input
               id="title"
               type="text"
-              className="w-full p-3 mt-1 border border-gray-300"
+              className="w-full p-3 border border-cesi-border gov-focus outline-none"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -59,11 +62,11 @@ function EditArticle() {
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Catégorie</label>
+            <label htmlFor="category" className="block text-sm font-medium text-cesi-dark mb-1">Catégorie</label>
             <input
               id="category"
               type="text"
-              className="w-full p-3 mt-1 border border-gray-300"
+              className="w-full p-3 border border-cesi-border gov-focus outline-none"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
@@ -71,23 +74,23 @@ function EditArticle() {
           </div>
           
           <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700">Contenu</label>
+            <label htmlFor="content" className="block text-sm font-medium text-cesi-dark mb-1">Contenu</label>
             <textarea
               id="content"
               rows="10"
-              className="w-full p-3 mt-1 border border-gray-300"
+              className="w-full p-3 border border-cesi-border gov-focus outline-none"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
             ></textarea>
           </div>
 
-          {success && <p className="p-3 bg-green-100 text-green-700">{success}</p>}
-          {error && <p className="p-3 bg-red-100 text-red-700">{error}</p>}
+          {success && <p className="p-3 bg-green-50 border border-green-200 text-green-700">{success}</p>}
+          {error && <p className="p-3 bg-red-50 border border-red-200 text-red-700">{error}</p>}
 
           <button
             type="submit"
-            className="bg-gov-primary text-white px-6 py-3 font-bold hover:opacity-90 transition"
+            className="gov-button"
           >
             Enregistrer les modifications
           </button>

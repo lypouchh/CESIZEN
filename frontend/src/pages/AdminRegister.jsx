@@ -26,27 +26,47 @@ function AdminRegister() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
-      <form onSubmit={handleSubmit} className="bg-white p-8 shadow-2xl w-full max-w-md space-y-4">
-        <h1 className="text-2xl font-black text-red-600 uppercase tracking-tighter">Initialisation Admin</h1>
-        <input type="text" placeholder="Prénom" className="w-full p-3 border" 
-               onChange={e => setFormData({...formData, firstname: e.target.value})} required />
-        <input type="text" placeholder="Nom" className="w-full p-3 border" 
-               onChange={e => setFormData({...formData, lastname: e.target.value})} required />
-        <input type="email" placeholder="Email" className="w-full p-3 border" 
-               onChange={e => setFormData({...formData, email: e.target.value})} required />
-        <input type="password" placeholder="Mot de passe" className="w-full p-3 border" 
-               onChange={e => setFormData({...formData, password: e.target.value})} required />
-        <div className="bg-red-50 p-4 border border-red-100">
-          <label className="block text-xs font-bold text-red-400 uppercase mb-1">Code Maître de Sécurité</label>
-          <input type="password" placeholder="Entrez le code du fichier .env" className="w-full p-2 border-red-200 border focus:ring-red-500" 
-                 onChange={e => setFormData({...formData, secret_code: e.target.value})} required />
+    <div className="min-h-screen flex items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full">
+        <div className="mb-6">
+          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Administration</p>
+          <h1 className="text-2xl font-bold text-cesi-primary">Initialisation du compte administrateur</h1>
         </div>
-        {message && <p className="text-center font-bold text-sm">{message}</p>}
-        <button className="w-full bg-red-600 text-white py-4 font-bold hover:bg-red-700 transition-colors">
-          Générer le compte privilège
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="gov-card space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-cesi-dark mb-1">Prénom</label>
+              <input type="text" className="w-full p-3 border border-cesi-border gov-focus outline-none"
+                     onChange={e => setFormData({...formData, firstname: e.target.value})} required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-cesi-dark mb-1">Nom</label>
+              <input type="text" className="w-full p-3 border border-cesi-border gov-focus outline-none"
+                     onChange={e => setFormData({...formData, lastname: e.target.value})} required />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-cesi-dark mb-1">Email</label>
+            <input type="email" className="w-full p-3 border border-cesi-border gov-focus outline-none"
+                   onChange={e => setFormData({...formData, email: e.target.value})} required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-cesi-dark mb-1">Mot de passe</label>
+            <input type="password" className="w-full p-3 border border-cesi-border gov-focus outline-none"
+                   onChange={e => setFormData({...formData, password: e.target.value})} required />
+          </div>
+          <div className="bg-gray-50 p-4 border border-cesi-border">
+            <label className="block text-sm font-medium text-cesi-dark mb-1">Code de sécurité maître</label>
+            <p className="text-xs text-gray-500 mb-2">Valeur définie dans le fichier <code>.env</code> du serveur.</p>
+            <input type="password" className="w-full p-3 border border-cesi-border gov-focus outline-none"
+                   onChange={e => setFormData({...formData, secret_code: e.target.value})} required />
+          </div>
+          {message && <p className="p-3 bg-blue-50 border border-cesi-border text-cesi-dark text-sm text-center">{message}</p>}
+          <button className="gov-button w-full">
+            Créer le compte administrateur
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

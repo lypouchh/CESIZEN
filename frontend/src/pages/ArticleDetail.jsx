@@ -54,21 +54,21 @@ export default function ArticleDetail() {
   }
 
   return (
-    <div className="min-h-[80vh] px-8 py-12">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
+    <div className="min-h-[80vh] py-8">
+      <div className="max-w-4xl mx-auto gov-card p-6 md:p-8">
+        <div className="mb-6">
           <Link
             to="/infos"
-            className="text-cesi-primary hover:text-cesi-accent font-medium transition inline-flex items-center gap-2"
+            className="text-cesi-primary hover:text-cesi-accent font-semibold transition inline-flex items-center gap-2 gov-focus"
           >
             ← Retour aux articles
           </Link>
         </div>
 
-        <article className="bg-white border border-cesi-border p-8">
+        <article>
           <header className="mb-8">
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-              <span className="bg-cesi-muted px-3 py-1">{article.category}</span>
+              <span className="bg-cesi-muted border border-cesi-border px-3 py-1">{article.category}</span>
               <span>•</span>
               <span>{new Date(article.created_at).toLocaleDateString('fr-FR')}</span>
             </div>
@@ -78,7 +78,7 @@ export default function ArticleDetail() {
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <span>Par {article.user?.firstname} {article.user?.lastname}</span>
               {article.user?.id_role === 1 && (
-                <span className="bg-red-100 text-red-700 px-2 py-1 text-xs">Administrateur</span>
+                <span className="bg-red-50 border border-red-200 text-red-700 px-2 py-1 text-xs">Administrateur</span>
               )}
             </div>
           </header>
@@ -92,10 +92,10 @@ export default function ArticleDetail() {
           {user?.id_role === 1 && (
             <div className="mt-8 pt-8 border-t border-cesi-border">
               <div className="flex gap-4">
-                <button className="bg-yellow-600 text-white px-4 py-2 hover:bg-yellow-700 transition">
+                <button className="gov-button-secondary px-4 py-2 gov-focus">
                   Modifier
                 </button>
-                <button className="bg-red-600 text-white px-4 py-2 hover:bg-red-700 transition">
+                <button className="px-4 py-2 border border-red-600 text-red-700 hover:bg-red-50 transition gov-focus">
                   Supprimer
                 </button>
               </div>

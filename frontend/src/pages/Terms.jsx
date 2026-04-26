@@ -2,10 +2,13 @@ import { Link } from 'react-router-dom';
 
 export default function Terms() {
   return (
-    <div className="max-w-4xl mx-auto p-8 text-gray-700 min-h-[80vh]">
-      <h1 className="text-3xl font-bold text-gov-primary mb-6">Conditions Générales d'Utilisation</h1>
+    <div className="max-w-4xl mx-auto py-8 px-4 text-gray-700 min-h-[80vh]">
+      <div className="mb-6">
+        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Informations légales</p>
+        <h1 className="text-3xl font-bold text-cesi-primary">Conditions Générales d'Utilisation</h1>
+      </div>
       
-      <div className="bg-white p-8 shadow-sm border border-gray-100 space-y-6 text-justify">
+      <div className="gov-card space-y-6 text-justify">
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-2">1. Introduction</h2>
           <p>Bienvenue sur CESIZEN. En accédant à cette application, vous acceptez d'être lié par les présentes conditions d'utilisation, toutes les lois et réglementations applicables, et convenez que vous êtes responsable du respect des lois locales applicables.</p>
@@ -28,7 +31,7 @@ export default function Terms() {
 
         <div className="pt-6 border-t border-gray-100">
           <p className="mb-4 text-sm text-gray-500">Dernière mise à jour : Mars 2026</p>
-          <Link to="/register" className="bg-gov-primary text-white px-6 py-2 font-bold hover:opacity-90 transition inline-block">
+          <Link to="/register" className="gov-button inline-block">
             Retour à l'inscription
           </Link>
         </div>

@@ -33,42 +33,46 @@ function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md">
-        <h2 className="text-center text-3xl font-extrabold text-cesi-primary">Nouveau mot de passe</h2>
-        
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full">
+        <div className="mb-6">
+          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Connexion</p>
+          <h1 className="text-2xl font-bold text-cesi-primary">Nouveau mot de passe</h1>
+        </div>
+        <div className="gov-card">
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nouveau mot de passe</label>
+            <label className="block text-sm font-medium text-cesi-dark mb-1">Nouveau mot de passe</label>
             <input
               type="password"
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-cesi-primary focus:border-cesi-primary"
+              className="w-full p-3 border border-cesi-border gov-focus outline-none"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
+            <label className="block text-sm font-medium text-cesi-dark mb-1">Confirmer le mot de passe</label>
             <input
               type="password"
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-cesi-primary focus:border-cesi-primary"
+              className="w-full p-3 border border-cesi-border gov-focus outline-none"
               value={passwordConfirmation}
               onChange={(e) => setPasswordConfirmation(e.target.value)}
             />
           </div>
 
-          {message && <p className="text-green-600 text-sm font-medium">{message}</p>}
-          {error && <p className="text-red-600 text-sm font-medium">{error}</p>}
+          {message && <p className="p-3 bg-green-50 border border-green-200 text-green-700 text-sm">{message}</p>}
+          {error && <p className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</p>}
 
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-cesi-primary hover:bg-opacity-90"
+            className="gov-button w-full"
           >
             Réinitialiser le mot de passe
           </button>
         </form>
+        </div>
       </div>
     </div>
   );

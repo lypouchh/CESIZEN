@@ -21,27 +21,38 @@ function AdminDashboard() {
   useEffect(() => { fetchUsers(); }, []);
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Gestion des Utilisateurs</h1>
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border">
+    <div>
+      <div className="mb-6">
+        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Administration</p>
+        <h1 className="text-3xl font-bold text-cesi-primary">Gestion des Utilisateurs</h1>
+      </div>
+      <div className="gov-card p-0 overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-gray-50 border-b border-cesi-border">
             <tr>
-              <th className="p-4">Nom</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Rôle</th>
-              <th className="p-4">Actions</th>
+              <th className="p-4 text-sm font-semibold text-cesi-dark">Nom</th>
+              <th className="p-4 text-sm font-semibold text-cesi-dark">Email</th>
+              <th className="p-4 text-sm font-semibold text-cesi-dark">Rôle</th>
+              <th className="p-4 text-sm font-semibold text-cesi-dark">Actions</th>
             </tr>
           </thead>
           <tbody>
             {users.map(u => (
-              <tr key={u.id} className="border-b hover:bg-gray-50">
+              <tr key={u.id} className="border-b border-cesi-border hover:bg-gray-50">
                 <td className="p-4">{u.firstname} {u.lastname}</td>
                 <td className="p-4">{u.email}</td>
-                <td className="p-4">{u.id_role === 1 ? '🔴 Admin' : '👤 Utilisateur'}</td>
+                <td className="p-4">
+                  <span className={`text-xs font-semibold uppercase px-2 py-1 border ${
+                    u.id_role === 1
+                      ? 'border-cesi-primary text-cesi-primary bg-blue-50'
+                      : 'border-gray-300 text-gray-600 bg-gray-50'
+                  }`}>
+                    {u.id_role === 1 ? 'Admin' : 'Utilisateur'}
+                  </span>
+                </td>
                 <td className="p-4">
                   {u.id_role !== 1 && (
-                    <button onClick={() => deleteUser(u.id)} className="text-red-500 hover:underline font-bold">Supprimer</button>
+                    <button onClick={() => deleteUser(u.id)} className="text-red-600 hover:underline font-semibold text-sm">Supprimer</button>
                   )}
                 </td>
               </tr>

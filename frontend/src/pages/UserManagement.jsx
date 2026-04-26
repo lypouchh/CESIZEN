@@ -81,27 +81,32 @@ function UserManagement() {
   }, [fetchUsers]); // On recharge si l'utilisateur courant change
 
   return (
-    <>
+    <section className="gov-card p-6 md:p-8">
+      <header className="mb-6 border-b border-cesi-border pb-4">
+        <p className="text-xs uppercase tracking-wide text-gray-500">Administration</p>
+        <h1 className="text-2xl font-bold text-cesi-primary mt-2">Gestion des utilisateurs</h1>
+      </header>
+
       {loading && <p>Chargement des utilisateurs...</p>}
-      {error && <p className="text-red-500 bg-red-100 p-3">{error}</p>}
-      {success && <p className="text-green-700 bg-green-100 p-3">{success}</p>}
+      {error && <p className="text-red-700 bg-red-50 border border-red-200 p-3">{error}</p>}
+      {success && <p className="text-green-700 bg-green-50 border border-green-200 p-3">{success}</p>}
 
       {isSuperAdmin && (
-        <form onSubmit={createSubAdmin} className="mb-6 bg-white border p-4 rounded-lg">
+        <form onSubmit={createSubAdmin} className="mb-6 bg-cesi-muted border border-cesi-border p-4">
           <h2 className="text-lg font-bold mb-3 text-cesi-dark">Créer un admin subordonné</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <input
               placeholder="Prénom"
               value={newAdmin.firstname}
               onChange={(e) => setNewAdmin(prev => ({ ...prev, firstname: e.target.value }))}
-              className="border border-cesi-border p-2 rounded"
+              className="border border-cesi-border p-2 gov-focus"
               required
             />
             <input
               placeholder="Nom"
               value={newAdmin.lastname}
               onChange={(e) => setNewAdmin(prev => ({ ...prev, lastname: e.target.value }))}
-              className="border border-cesi-border p-2 rounded"
+              className="border border-cesi-border p-2 gov-focus"
               required
             />
             <input
@@ -109,7 +114,7 @@ function UserManagement() {
               placeholder="Email"
               value={newAdmin.email}
               onChange={(e) => setNewAdmin(prev => ({ ...prev, email: e.target.value }))}
-              className="border border-cesi-border p-2 rounded"
+              className="border border-cesi-border p-2 gov-focus"
               required
             />
             <input
@@ -117,7 +122,7 @@ function UserManagement() {
               placeholder="Mot de passe"
               value={newAdmin.password}
               onChange={(e) => setNewAdmin(prev => ({ ...prev, password: e.target.value }))}
-              className="border border-cesi-border p-2 rounded"
+              className="border border-cesi-border p-2 gov-focus"
               minLength={8}
               required
             />
@@ -126,19 +131,19 @@ function UserManagement() {
               placeholder="Confirmation du mot de passe"
               value={newAdmin.password_confirmation}
               onChange={(e) => setNewAdmin(prev => ({ ...prev, password_confirmation: e.target.value }))}
-              className="border border-cesi-border p-2 rounded md:col-span-2"
+              className="border border-cesi-border p-2 md:col-span-2 gov-focus"
               minLength={8}
               required
             />
           </div>
-          <button type="submit" className="mt-4 bg-cesi-primary text-white px-4 py-2 rounded hover:bg-cesi-secondary transition">
+          <button type="submit" className="mt-4 gov-button px-4 py-2 gov-focus">
             Créer l'admin
           </button>
         </form>
       )}
 
       {!loading && !error && (
-        <div className="bg-white shadow-sm overflow-hidden border">
+        <div className="bg-white overflow-hidden border border-cesi-border">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -155,9 +160,9 @@ function UserManagement() {
                   <td className="p-4 text-gray-600">{u.email}</td>
                   <td className="p-4">
                     {isAdminRow(u) ? (
-                      <span className="font-bold text-red-600">{u.isSuperAdmin ? '🛡️ Super Admin' : '🔴 Admin'}</span>
+                      <span className="font-bold text-red-700">{u.isSuperAdmin ? 'Super Admin' : 'Admin'}</span>
                     ) : (
-                      <span className="text-gray-700">👤 Utilisateur</span>
+                      <span className="text-gray-700">Utilisateur</span>
                     )}
                   </td>
                   <td className="p-4 space-x-4">
@@ -165,11 +170,11 @@ function UserManagement() {
                       <>
                         <button 
                           onClick={() => toggleUserStatus(u.id)} 
-                          className={`font-bold ${u.isActive ? 'text-orange-500 hover:underline' : 'text-green-500 hover:underline'}`}
+                          className={`font-bold gov-focus ${u.isActive ? 'text-orange-600 hover:underline' : 'text-green-600 hover:underline'}`}
                         >
                           {u.isActive ? 'Désactiver' : 'Activer'}
                         </button>
-                        <button onClick={() => deleteUser(u.id)} className="text-red-500 hover:underline font-bold">Supprimer</button>
+                        <button onClick={() => deleteUser(u.id)} className="text-red-700 hover:underline font-bold gov-focus">Supprimer</button>
                       </>
                     )}
                   </td>
@@ -179,7 +184,7 @@ function UserManagement() {
           </table>
         </div>
       )}
-    </>
+    </section>
   );
 }
 export default UserManagement;

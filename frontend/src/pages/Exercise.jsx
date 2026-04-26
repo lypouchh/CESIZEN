@@ -132,84 +132,92 @@ export default function Exercise() {
   }, [isActive, selectedMode, currentMode, targetRepetitions]);
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-[80vh] p-8">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-cesi-primary">Cohérence Cardiaque</h2>
-        <p className="text-gray-600 text-sm mt-1">Suivez le guide pour respirer</p>
-      </div>
+    <div className="min-h-[80vh] py-8">
+      <section className="gov-card max-w-4xl mx-auto p-6 md:p-8">
+        <header className="mb-8 border-b border-cesi-border pb-6">
+          <p className="text-xs uppercase tracking-wide text-gray-500">Module respiration</p>
+          <h2 className="text-3xl font-bold text-cesi-primary mt-2">Cohérence Cardiaque</h2>
+          <p className="text-gray-600 text-sm mt-2">Suivez le guide pour respirer et reguler votre rythme.</p>
+        </header>
 
-      {/* Animation Circle */}
-      <div className="relative flex items-center justify-center">
-        <div 
-          className="w-48 h-48 rounded-full border-4 border-cesi-secondary/50 bg-cesi-secondary/10 flex items-center justify-center transition-transform ease-in-out"
-          style={{ 
-            transitionDuration: transitionDuration,
-            transform: `scale(${getScaleFactor()})`
-          }}
-        >
-          <span className="text-cesi-primary font-medium text-xl">{phase}</span>
-        </div>
-      </div>
-
-      <div className="w-full max-w-xs flex flex-col gap-4">
-        <div className="flex gap-2 justify-center">
-          {Object.keys(MODES).map(m => (
-            <button 
-              key={m}
-              onClick={() => {
-                setSelectedMode(m);
-                setIsActive(false); // On arrête l'exercice si on change de mode
-              }}
-              className={`px-4 py-2 border-2 font-medium text-sm transition-colors ${selectedMode === m ? 'bg-cesi-primary text-white border-cesi-primary' : 'bg-white text-cesi-dark border-cesi-border hover:border-cesi-primary'}`}
-            >
-              {m.replace('748', '7-4-8').replace('55', '5-5').replace('46', '4-6')}
-            </button>
-          ))}
-        </div>
-        
-        <p className="text-center text-xs text-gray-500 italic mb-2">
-          Mode : {currentMode.label}
-        </p>
-
-        <div>
-          <label htmlFor="repetitions" className="block text-xs text-gray-600 mb-1">Nombre de répétitions</label>
-          <input
-            id="repetitions"
-            type="number"
-            min={1}
-            max={20}
-            value={targetRepetitions}
-            onChange={(e) => setTargetRepetitions(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
-            className="w-full p-2 border border-cesi-border text-sm"
-            disabled={isActive}
-          />
-        </div>
-
-        {isActive && (
-          <p className="text-center text-xs text-blue-600 font-medium">
-            Répétition {Math.min(currentRepetition, targetRepetitions)} / {targetRepetitions}
-          </p>
-        )}
-
-        <button 
-          onClick={toggleExercise}
-          className={`w-full py-3 font-medium text-sm border-2 transition-colors ${isActive ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-cesi-accent text-white border-cesi-accent hover:bg-cesi-primary hover:border-cesi-primary'}`}
-        >
-          {isActive ? 'Arrêter l\'exercice' : 'Commencer la séance'}
-        </button>
-
-        {message && (
-          <div className="text-center text-sm text-green-600 font-medium mt-2">
-            {message}
+        <div className="grid gap-8 md:grid-cols-[1fr_320px]">
+          <div className="flex flex-col items-center justify-center">
+            <div className="relative flex items-center justify-center">
+              <div
+                className="w-56 h-56 rounded-full border-4 border-cesi-secondary/30 bg-blue-50 flex items-center justify-center transition-transform ease-in-out"
+                style={{
+                  transitionDuration: transitionDuration,
+                  transform: `scale(${getScaleFactor()})`
+                }}
+              >
+                <span className="text-cesi-primary font-semibold text-2xl">{phase}</span>
+              </div>
+            </div>
           </div>
-        )}
 
-        {user && (
-          <p className="text-center text-xs text-gray-400 mt-2">
-            {isActive ? 'Session en cours...' : 'Vos sessions sont automatiquement sauvegardées'}
-          </p>
-        )}
-      </div>
+          <div className="w-full flex flex-col gap-4">
+            <div>
+              <p className="text-sm font-semibold text-cesi-dark mb-2">Choix du rythme</p>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.keys(MODES).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => {
+                      setSelectedMode(m);
+                      setIsActive(false);
+                    }}
+                    className={`px-3 py-2 border font-medium text-sm transition-colors gov-focus ${selectedMode === m ? 'bg-cesi-primary text-white border-cesi-primary' : 'bg-white text-cesi-dark border-cesi-border hover:border-cesi-primary'}`}
+                  >
+                    {m.replace('748', '7-4-8').replace('55', '5-5').replace('46', '4-6')}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                Mode : {currentMode.label}
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="repetitions" className="block text-sm font-semibold text-cesi-dark mb-2">Nombre de répétitions</label>
+              <input
+                id="repetitions"
+                type="number"
+                min={1}
+                max={20}
+                value={targetRepetitions}
+                onChange={(e) => setTargetRepetitions(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                className="w-full p-2 border border-cesi-border text-sm gov-focus"
+                disabled={isActive}
+              />
+            </div>
+
+            {isActive && (
+              <p className="text-sm text-cesi-primary font-semibold">
+                Répétition {Math.min(currentRepetition, targetRepetitions)} / {targetRepetitions}
+              </p>
+            )}
+
+            <button
+              onClick={toggleExercise}
+              className={`w-full py-3 font-semibold text-sm transition-colors gov-focus ${isActive ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100' : 'gov-button'}`}
+            >
+              {isActive ? 'Arrêter l\'exercice' : 'Commencer la séance'}
+            </button>
+
+            {message && (
+              <div className="text-sm text-green-700 bg-green-50 border border-green-200 p-2">
+                {message}
+              </div>
+            )}
+
+            {user && (
+              <p className="text-xs text-gray-500 border-l-2 border-cesi-primary pl-3">
+                {isActive ? 'Session en cours...' : 'Vos sessions sont automatiquement sauvegardées'}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

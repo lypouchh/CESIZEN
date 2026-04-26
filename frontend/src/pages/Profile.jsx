@@ -44,7 +44,8 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
     <div className="min-h-[90vh] flex flex-col items-center pt-10 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-3xl bg-white p-8 border border-cesi-border shadow-sm">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-cesi-dark">Mon Profil</h1>
+          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Compte</p>
+          <h1 className="text-3xl font-bold text-cesi-primary">Mon Profil</h1>
           <p className="text-gray-600 mt-2">Gérez vos informations et votre compte.</p>
         </div>
 
@@ -60,7 +61,7 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
                 type="text"
                 value={firstname}
                 onChange={(e) => setFirstname(e.target.value)}
-                className="w-full p-3 border border-cesi-border rounded-lg focus:border-cesi-primary focus:ring-1 focus:ring-cesi-primary outline-none"
+                className="w-full p-3 border border-cesi-border gov-focus outline-none"
               />
             </div>
 
@@ -71,7 +72,7 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
                 type="text"
                 value={lastname}
                 onChange={(e) => setLastname(e.target.value)}
-                className="w-full p-3 border border-cesi-border rounded-lg focus:border-cesi-primary focus:ring-1 focus:ring-cesi-primary outline-none"
+                className="w-full p-3 border border-cesi-border gov-focus outline-none"
               />
             </div>
           </div>
@@ -83,21 +84,21 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-cesi-border rounded-lg focus:border-cesi-primary focus:ring-1 focus:ring-cesi-primary outline-none"
+              className="w-full p-3 border border-cesi-border gov-focus outline-none"
             />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <button
               type="submit"
-              className="w-full bg-cesi-primary text-white py-3 rounded-lg font-semibold hover:bg-cesi-secondary transition"
+              className="gov-button w-full"
             >
               Enregistrer les modifications
             </button>
             <button
               type="button"
               onClick={() => navigate('/change-password')}
-              className="w-full border border-cesi-border text-cesi-dark py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
+              className="gov-button-secondary w-full"
             >
               Changer le mot de passe
             </button>
@@ -108,14 +109,14 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
           <button
             type="button"
             onClick={handleDelete}
-            className="w-full bg-red-50 text-red-600 border border-red-200 py-3 rounded-lg font-semibold hover:bg-red-100 transition"
+            className="w-full border border-red-300 text-red-700 py-3 font-semibold hover:bg-red-50 transition"
           >
             Supprimer mon compte
           </button>
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-4 w-full bg-cesi-muted text-cesi-dark border border-cesi-border py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+            className="gov-button-secondary w-full mt-4"
           >
             Se déconnecter
           </button>
@@ -206,7 +207,8 @@ export default function Profile() {
       />
 
       <section className="max-w-3xl mx-auto bg-white p-6 border border-cesi-border shadow-sm">
-        <h2 className="text-2xl font-bold text-cesi-dark mb-4">Tableau de bord respiration</h2>
+        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Exercices</p>
+        <h2 className="text-2xl font-bold text-cesi-primary mb-4">Tableau de bord respiration</h2>
         {!sessionsLoaded && <p className="text-sm text-gray-500 mb-3">Chargement des sessions...</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
           <div className="p-4 border border-cesi-border bg-blue-50">

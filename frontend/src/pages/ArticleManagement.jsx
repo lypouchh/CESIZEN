@@ -38,22 +38,25 @@ function ArticleManagement() {
   }, []);
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Gestion des Articles</h1>
+    <div>
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Administration</p>
+          <h1 className="text-3xl font-bold text-cesi-primary">Gestion des Articles</h1>
+        </div>
         <button 
           onClick={() => navigate('/admin/articles/add')}
-          className="bg-gov-primary hover:opacity-90 text-white font-bold py-2 px-4"
+          className="gov-button"
         >
           Ajouter un article
         </button>
       </div>
 
-      {loading && <p>Chargement des articles...</p>}
-      {error && <p className="text-red-500 bg-red-100 p-3">{error}</p>}
+      {loading && <p className="text-sm text-gray-500">Chargement des articles...</p>}
+      {error && <p className="p-3 bg-red-50 border border-red-200 text-red-700">{error}</p>}
 
       {!loading && !error && (
-        <div className="bg-white shadow-sm overflow-hidden border">
+        <div className="gov-card p-0 overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -72,13 +75,13 @@ function ArticleManagement() {
                   <td className="p-4 space-x-4">
                     <button 
                       onClick={() => navigate(`/admin/articles/edit/${article.id}`)} 
-                      className="text-gov-primary hover:underline font-bold"
+                      className="text-cesi-primary hover:underline font-semibold text-sm"
                     >
                       Modifier
                     </button>
                     <button 
                       onClick={() => deleteArticle(article.id)} 
-                      className="text-red-500 hover:underline font-bold"
+                      className="text-red-600 hover:underline font-semibold text-sm"
                     >
                       Supprimer
                     </button>

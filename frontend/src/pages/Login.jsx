@@ -26,53 +26,56 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[80vh] flex flex-col justify-center px-8">
-      <div className="mb-10 text-center">
-        <h2 className="text-2xl font-bold text-cesi-primary">Connexion</h2>
-        <p className="text-gray-600 mt-2 text-sm">Accédez à votre espace personnel</p>
-      </div>
-
-      {error && <div className="bg-red-50 text-cesi-error p-3 border border-red-200 mb-4 text-sm text-center">{error}</div>}
-
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="login-email" className="block text-sm font-medium text-cesi-dark mb-2">Adresse e-mail</label>
-          <input 
-            id="login-email"
-            type="email" 
-            placeholder="votre@email.fr"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 bg-white border border-cesi-border focus:border-cesi-primary focus:ring-1 focus:ring-cesi-primary outline-none transition-all"
-          />
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-10">
+      <section className="gov-card w-full max-w-xl p-6 md:p-10">
+        <div className="mb-8">
+          <p className="text-xs uppercase tracking-wide text-gray-500">Authentification</p>
+          <h2 className="mt-2 text-3xl font-bold text-cesi-primary">Connexion</h2>
+          <p className="text-gray-600 mt-2 text-sm">Accedez a votre espace personnel.</p>
         </div>
 
-        <div>
-          <label htmlFor="login-password" className="block text-sm font-medium text-cesi-dark mb-2">Mot de passe</label>
-          <input 
-            id="login-password"
-            type="password" 
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 bg-white border border-cesi-border focus:border-cesi-primary focus:ring-1 focus:ring-cesi-primary outline-none transition-all"
-          />
+        {error && <div className="bg-red-50 text-cesi-error p-3 border border-red-200 mb-4 text-sm">{error}</div>}
+
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="login-email" className="block text-sm font-semibold text-cesi-dark mb-2">Adresse e-mail</label>
+            <input 
+              id="login-email"
+              type="email" 
+              placeholder="votre@email.fr"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 bg-white border border-cesi-border focus:border-cesi-primary focus:ring-2 focus:ring-blue-200 outline-none transition-all gov-focus"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="login-password" className="block text-sm font-semibold text-cesi-dark mb-2">Mot de passe</label>
+            <input 
+              id="login-password"
+              type="password" 
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 bg-white border border-cesi-border focus:border-cesi-primary focus:ring-2 focus:ring-blue-200 outline-none transition-all gov-focus"
+            />
+          </div>
+
+          <button type="submit" className="gov-button py-3 mt-2 gov-focus">
+            Se connecter
+          </button>
+        </form>
+
+        <div className="mt-8 text-sm text-gray-700">
+          <p>
+            Pas encore de compte ?
+            <Link to="/register" className="text-cesi-primary font-semibold ml-1 hover:underline gov-focus">Creer un compte</Link>
+          </p>
+          <Link to="/forgot-password" className="mt-2 inline-block text-gray-600 hover:text-cesi-primary transition-colors gov-focus">
+            Mot de passe oublie ?
+          </Link>
         </div>
-
-        <button type="submit" className="bg-cesi-accent text-white font-medium py-3 border-2 border-cesi-accent hover:bg-cesi-primary hover:border-cesi-primary transition-colors mt-4">
-          Se connecter
-        </button>
-      </form>
-
-      <div className="mt-8 text-center flex flex-col gap-2">
-        <p className="text-sm text-gray-600">
-          Pas encore de compte ? 
-          <Link to="/register" className="text-cesi-primary font-medium ml-1 hover:underline">Créer un compte</Link>
-        </p>
-        <Link to="/forgot-password" className="text-sm text-gray-500 hover:text-cesi-primary transition-colors">
-          Mot de passe oublié ?
-        </Link>
-      </div>
+      </section>
     </div>
   );
 }

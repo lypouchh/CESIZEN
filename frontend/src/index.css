@@ -1,43 +1,118 @@
 @import "tailwindcss";
 
-/* Configuration des couleurs gouvernementales classiques */
+/* Charte graphique institutionnelle inspiree des standards publics francais */
 @theme {
-  --color-cesi-primary: #1e40af;     /* Bleu marine classique */
-  --color-cesi-secondary: #3b82f6;   /* Bleu clair institutionnel */
-  --color-cesi-dark: #1f2937;       /* Gris anthracite */
-  --color-cesi-light: #ffffff;      /* Blanc pur */
-  --color-cesi-accent: #2563eb;     /* Bleu bouton */
-  --color-cesi-success: #059669;    /* Vert succès */
-  --color-cesi-error: #dc2626;      /* Rouge erreur */
-  --color-cesi-muted: #f8fafc;      /* Gris très clair pour fonds */
-  --color-cesi-border: #e2e8f0;     /* Gris bordure */
+  --color-cesi-primary: #000091;
+  --color-cesi-secondary: #1212ff;
+  --color-cesi-dark: #161616;
+  --color-cesi-light: #ffffff;
+  --color-cesi-accent: #000091;
+  --color-cesi-success: #18753c;
+  --color-cesi-error: #ce0500;
+  --color-cesi-muted: #f6f6f6;
+  --color-cesi-border: #dddddd;
 }
 
-/* Style gouvernemental sobre */
+:root {
+  --gov-blue: #000091;
+  --gov-blue-hover: #1212ff;
+  --gov-blue-soft: #f5f5fe;
+  --gov-red: #e1000f;
+  --gov-text: #161616;
+  --gov-bg: #f9f9fb;
+  --gov-border: #dddddd;
+  --gov-muted-text: #3a3a3a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
-  background-color: var(--color-cesi-light);
-  color: var(--color-cesi-dark);
-  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+  margin: 0;
+  background: linear-gradient(180deg, #ffffff 0%, var(--gov-bg) 100%);
+  color: var(--gov-text);
+  font-family: Marianne, "Source Sans 3", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   line-height: 1.5;
+  letter-spacing: 0.01em;
 }
 
-/* Réduction des arrondis pour un style plus institutionnel */
-.rounded-xl {
-  border-radius: 0.25rem;
+a {
+  color: var(--gov-blue);
+  text-underline-offset: 2px;
 }
 
-.rounded-lg {
-  border-radius: 0.125rem;
+h1,
+h2,
+h3,
+h4 {
+  color: var(--gov-text);
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
-.rounded-md {
-  border-radius: 0.125rem;
+input,
+select,
+textarea {
+  border-radius: 2px;
 }
 
-/* Suppression des ombres pour un look plus plat */
-.shadow-sm,
-.shadow,
-.shadow-md,
-.shadow-lg {
-  box-shadow: none;
+.gov-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.gov-card {
+  background: #fff;
+  border: 1px solid var(--gov-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 145, 0.06);
+}
+
+.gov-section-title {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 3px solid var(--gov-blue);
+}
+
+.gov-button {
+  border: 1px solid var(--gov-blue);
+  border-radius: 2px;
+  background: var(--gov-blue);
+  color: #fff;
+  font-weight: 600;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.gov-button:hover {
+  background: var(--gov-blue-hover);
+  border-color: var(--gov-blue-hover);
+}
+
+.gov-button-secondary {
+  border: 1px solid var(--gov-border);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--gov-text);
+  font-weight: 600;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.gov-button-secondary:hover {
+  border-color: var(--gov-blue);
+  color: var(--gov-blue);
+}
+
+.gov-focus:focus,
+.gov-focus:focus-visible {
+  outline: 3px solid #0a76f6;
+  outline-offset: 1px;
 }
