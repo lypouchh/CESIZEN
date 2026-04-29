@@ -20,9 +20,10 @@ class ExerciseController extends Controller {
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'durationDefault' => 'required|integer',
-            'breathingRateDefault' => 'required|integer',
-            'animationType' => 'required|string|max:50',
+            'description' => 'required|string',
+            'inhaleDuration' => 'required|integer|min:1',
+            'exhaleDuration' => 'required|integer|min:1',
+            'holdDuration' => 'required|integer|min:0',
         ]);
 
         $exercise = Exercise::create($validated);
@@ -34,9 +35,10 @@ class ExerciseController extends Controller {
     {
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:100',
-            'durationDefault' => 'sometimes|required|integer',
-            'breathingRateDefault' => 'sometimes|required|integer',
-            'animationType' => 'sometimes|required|string|max:50',
+            'description' => 'sometimes|required|string',
+            'inhaleDuration' => 'sometimes|required|integer|min:1',
+            'exhaleDuration' => 'sometimes|required|integer|min:1',
+            'holdDuration' => 'sometimes|required|integer|min:0',
         ]);
 
         $exercise->update($validated);

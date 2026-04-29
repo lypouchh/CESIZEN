@@ -13,7 +13,7 @@ describe('UserManagement page', () => {
     vi.clearAllMocks();
   });
 
-  test('loads users and hides current user from the table', async () => {
+  test('loads users and shows current user in the table', async () => {
     const api = {
       get: vi.fn().mockResolvedValue({
         data: {
@@ -36,7 +36,8 @@ describe('UserManagement page', () => {
     render(<UserManagement />);
 
     expect(await screen.findByText('alice@example.com')).toBeInTheDocument();
-    expect(screen.queryByText('admin@example.com')).not.toBeInTheDocument();
+    expect(screen.getByText('admin@example.com')).toBeInTheDocument();
+    expect(screen.getByText(/Admin \(vous\)/i)).toBeInTheDocument();
   });
 
   test('toggles user status', async () => {
@@ -132,5 +133,32 @@ describe('UserManagement page', () => {
     render(<UserManagement />);
 
     expect(await screen.findByText(/Impossible de charger les utilisateurs/i)).toBeInTheDocument();
+  });
+
+  test('does not show create-admin form for non super admin', async () => {
+    const api = {
+      get: vi.fn().mockResolvedValue({
+        data: {
+          users: [
+            { id: 2, firstname: 'Alice', lastname: 'Demo', email: 'alice@example.com', id_role: 2, isActive: true, role: { nom: 'user' } },
+          ],
+          currentAdmin: { id: 99, isSuperAdmin: false },
+        },
+      }),
+      put: vi.fn(),
+      delete: vi.fn(),
+      post: vi.fn(),
+    };
+
+    useAuth.mockReturnValue({
+      api,
+      user: { id: 99 },
+    });
+
+    render(<UserManagement />);
+
+    expect(await screen.findByText('alice@example.com')).toBeInTheDocument();
+    expect(screen.queryByText(/Créer un admin subordonné/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/vous ne pouvez pas créer d'autre admin/i)).toBeInTheDocument();
   });
 });

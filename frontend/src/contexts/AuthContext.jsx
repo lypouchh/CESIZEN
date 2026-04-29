@@ -10,8 +10,24 @@ export const AuthProvider = ({ children }) => {
 
   // On utilise useMemo pour ne pas recréer l'instance axios à chaque rendu.
   const api = useMemo(() => {
+    // Construire l'URL de l'API de manière flexible
+    const getApiUrl = () => {
+      const hostname = window.location.hostname;
+      const port = 8000;
+      
+      // Si on accède depuis le réseau local (192.168.x.x, 10.x.x.x, etc.), utiliser cette IP
+      // Sinon (localhost), utiliser localhost:8000
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `http://localhost:${port}/api`;
+      }
+      // Pour accès depuis le réseau local (phone, autre PC, etc.)
+      return `http://${hostname}:${port}/api`;
+    };
+
+    const apiUrl = getApiUrl();
+    
     const axiosInstance = axios.create({
-      baseURL: `http://${window.location.hostname}:8000/api`, // S'adapte automatiquement à l'IP utilisée
+      baseURL: apiUrl,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

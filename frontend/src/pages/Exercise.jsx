@@ -22,7 +22,7 @@ export default function Exercise() {
   const currentMode = MODES[selectedMode];
 
   // Fonction pour sauvegarder la session
-  const saveSession = async (duration, breathingRate) => {
+  const saveSession = async (duration, breathingRate, repetitions) => {
     if (!user) return;
 
     try {
@@ -31,6 +31,7 @@ export default function Exercise() {
       await api.post('/sessions', {
         duration: Math.round(duration),
         breathingRate,
+        repetitions,
         id_user: user.id,
         id_Exercise: exerciseId,
       });
@@ -46,9 +47,10 @@ export default function Exercise() {
   const completeSession = () => {
     const duration = sessionStartTime ? (Date.now() - sessionStartTime) / 1000 : 0;
     const breathingRate = selectedMode === '55' ? 6 : selectedMode === '46' ? 5 : 4;
+    const repetitionsDone = Math.max(1, Math.min(currentRepetition || 1, targetRepetitions));
 
     if (duration > 10 && user) {
-      saveSession(duration, breathingRate);
+      saveSession(duration, breathingRate, repetitionsDone);
     }
 
     setSessionStartTime(null);

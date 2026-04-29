@@ -17,17 +17,17 @@ function UserManagement() {
   const { api, user: currentUser } = useAuth(); // On récupère l'instance API et l'utilisateur courant
 
   const isAdminRow = (u) => (u?.role?.nom || '').toLowerCase() === 'admin' || u.id_role === 1;
+  const isCurrentUser = (u) => u?.id === currentUser?.id;
 
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get('/admin/users');
       const payload = Array.isArray(res.data) ? { users: res.data, currentAdmin: { isSuperAdmin: false } } : res.data;
-      const currentId = currentUser?.id;
       const list = payload.users || [];
 
       setIsSuperAdmin(Boolean(payload.currentAdmin?.isSuperAdmin));
-      setUsers(currentId ? list.filter(u => u.id !== currentId) : list);
+      setUsers(list);
       setError('');
     } catch {
       setError('Impossible de charger les utilisateurs.');
@@ -142,6 +142,12 @@ function UserManagement() {
         </form>
       )}
 
+      {!isSuperAdmin && (
+        <p className="mb-6 text-sm text-gray-600 bg-gray-50 border border-cesi-border p-3">
+          Vous êtes admin subordonné: vous pouvez gérer les comptes utilisateurs, mais vous ne pouvez pas créer d'autre admin.
+        </p>
+      )}
+
       {!loading && !error && (
         <div className="bg-white overflow-hidden border border-cesi-border">
           <table className="w-full text-left">
@@ -160,13 +166,15 @@ function UserManagement() {
                   <td className="p-4 text-gray-600">{u.email}</td>
                   <td className="p-4">
                     {isAdminRow(u) ? (
-                      <span className="font-bold text-red-700">{u.isSuperAdmin ? 'Super Admin' : 'Admin'}</span>
+                      <span className="font-bold text-red-700">
+                        {u.isSuperAdmin ? 'Super Admin' : 'Admin'}{isCurrentUser(u) ? ' (vous)' : ''}
+                      </span>
                     ) : (
-                      <span className="text-gray-700">Utilisateur</span>
+                      <span className="text-gray-700">Utilisateur{isCurrentUser(u) ? ' (vous)' : ''}</span>
                     )}
                   </td>
                   <td className="p-4 space-x-4">
-                    {(!isAdminRow(u) || isSuperAdmin) && !u.isSuperAdmin && (
+                    {(!isCurrentUser(u) && !isAdminRow(u)) && (
                       <>
                         <button 
                           onClick={() => toggleUserStatus(u.id)} 
@@ -176,6 +184,21 @@ function UserManagement() {
                         </button>
                         <button onClick={() => deleteUser(u.id)} className="text-red-700 hover:underline font-bold gov-focus">Supprimer</button>
                       </>
+                    )}
+
+                    {(isSuperAdmin && !isCurrentUser(u) && isAdminRow(u) && !u.isSuperAdmin) && (
+                      <>
+                        <button 
+                          onClick={() => toggleUserStatus(u.id)} 
+                          className={`font-bold gov-focus ${u.isActive ? 'text-orange-600 hover:underline' : 'text-green-600 hover:underline'}`}
+                        >
+                          {u.isActive ? 'Désactiver' : 'Activer'}
+                        </button>
+                      </>
+                    )}
+
+                    {(isCurrentUser(u) || u.isSuperAdmin) && (
+                      <span className="text-sm text-gray-500">Aucune action</span>
                     )}
                   </td>
                 </tr>

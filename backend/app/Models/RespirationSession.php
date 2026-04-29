@@ -9,7 +9,7 @@ class RespirationSession extends Model {
     protected $table = 'respiration_sessions';
     public $timestamps = false;
 
-    protected $fillable = ['date', 'duration', 'breathingRate', 'id_user', 'id_Exercise'];
+    protected $fillable = ['date', 'duration', 'breathingRate', 'repetitions', 'id_user', 'id_Exercise'];
 
     public function user(): BelongsTo {
         return $this->belongsTo(User::class, 'id_user');

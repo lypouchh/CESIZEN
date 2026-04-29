@@ -129,6 +129,7 @@ describe('Profile page', () => {
       </MemoryRouter>
     );
 
+    await userEvent.click(screen.getByRole('button', { name: /Exercices/i }));
     expect(await screen.findByText(/Aucune séance enregistrée pour le moment/i)).toBeInTheDocument();
   });
 });

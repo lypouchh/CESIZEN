@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\RespirationSession;
 use Illuminate\Http\Request;
 
-class RespirationSessionController extends Controller {
-    public function index(Request $request) {
+class RespirationSessionController extends Controller
+{
+    public function index(Request $request)
+    {
         $userId = $request->query('id_user');
         $query = RespirationSession::with('exercise');
 
@@ -20,15 +22,24 @@ class RespirationSessionController extends Controller {
         return response()->json($query->get());
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $validated = $request->validate([
             'duration' => 'required|integer',
             'breathingRate' => 'required|integer',
+            'repetitions' => 'nullable|integer|min:1',
             'id_user' => 'required|exists:users,id',
-            'id_Exercise' => 'required|exists:exercises,id'
+            'id_Exercise' => 'required|exists:exercises,id',
         ]);
 
-        if ($request->user() && (int) $request->user()->id !== (int) $validated['id_user']) {
+        $validated['repetitions'] = isset($validated['repetitions'])
+            ? (int) $validated['repetitions']
+            : 1;
+
+        $authenticatedUser = $request->user();
+        $requestedUserId = (int) $validated['id_user'];
+
+        if ($authenticatedUser && (int) $authenticatedUser->id !== $requestedUserId) {
             return response()->json(['message' => 'Action non autorisée.'], 403);
         }
 
