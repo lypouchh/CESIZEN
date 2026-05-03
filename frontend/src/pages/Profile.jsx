@@ -125,7 +125,24 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
 }
 
 function ExerciseDashboard({ sessions, sessionsLoaded, now }) {
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [hoveredDay, setHoveredDay] = useState(null);
+
+  const getDateKey = (value) => {
+    if (!value) return null;
+
+    if (typeof value === 'string') {
+      // Keep the database day as-is to avoid UTC/local timezone shifts.
+      return value.slice(0, 10);
+    }
+
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return null;
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const { totalsByExercise, totalAll, calendarCells } = useMemo(() => {
     const totals = sessions.reduce((acc, session) => {
@@ -142,7 +159,10 @@ function ExerciseDashboard({ sessions, sessionsLoaded, now }) {
     const firstWeekday = (firstDay.getDay() + 6) % 7;
 
     const byDay = sessions.reduce((acc, session) => {
-      const dateKey = new Date(session.date).toISOString().slice(0, 10);
+      const dateKey = getDateKey(session.date);
+      if (!dateKey) {
+        return acc;
+      }
       if (!acc[dateKey]) {
         acc[dateKey] = { total: 0, byExercise: {} };
       }
@@ -161,7 +181,7 @@ function ExerciseDashboard({ sessions, sessionsLoaded, now }) {
     }
     for (let day = 1; day <= lastDay.getDate(); day += 1) {
       const d = new Date(year, month, day);
-      const dateKey = d.toISOString().slice(0, 10);
+      const dateKey = getDateKey(d);
       cells.push({ day, dateKey, info: byDay[dateKey] || null });
     }
 
@@ -204,13 +224,13 @@ function ExerciseDashboard({ sessions, sessionsLoaded, now }) {
 
       <h3 className="text-lg font-bold text-cesi-dark mb-3">Calendrier des séances ({now.toLocaleString('fr-FR', { month: 'long', year: 'numeric' })})</h3>
       <p className="text-xs text-gray-500 mb-3">Survole un jour en bleu pour voir le détail cumulé: type d'exercice + nombre total de répétitions.</p>
-      <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-gray-500 mb-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[11px] sm:text-xs font-semibold text-gray-500 mb-2">
         <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
       </div>
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {calendarCells.map((cell, idx) => {
           if (!cell) {
-            return <div key={`empty-${idx}`} className="h-10 border border-transparent" />;
+            return <div key={`empty-${idx}`} className="h-9 sm:h-10 border border-transparent" />;
           }
 
           const tooltip = cell.info
@@ -225,8 +245,18 @@ function ExerciseDashboard({ sessions, sessionsLoaded, now }) {
               type="button"
               key={cell.dateKey}
               title={tooltip}
-              onClick={() => setSelectedDay(cell.info ? { day: cell.day, dateKey: cell.dateKey, info: cell.info } : null)}
-              className={`w-10 h-10 flex items-center justify-center rounded-full border text-sm mx-auto transition-colors ${cell.info ? 'border-blue-600 bg-blue-600 text-white font-bold hover:bg-blue-700' : 'border-cesi-border text-gray-600 hover:bg-gray-100'} ${selectedDay?.dateKey === cell.dateKey ? 'ring-2 ring-blue-300' : ''}`}
+              onMouseEnter={() => setHoveredDay(cell.info ? { day: cell.day, dateKey: cell.dateKey, info: cell.info } : null)}
+              onMouseLeave={() => setHoveredDay(null)}
+              onFocus={() => setHoveredDay(cell.info ? { day: cell.day, dateKey: cell.dateKey, info: cell.info } : null)}
+              onBlur={() => setHoveredDay(null)}
+              onClick={() => {
+                if (!cell.info) {
+                  setHoveredDay(null);
+                  return;
+                }
+                setHoveredDay((prev) => (prev?.dateKey === cell.dateKey ? null : { day: cell.day, dateKey: cell.dateKey, info: cell.info }));
+              }}
+              className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border text-xs sm:text-sm mx-auto transition-colors ${cell.info ? 'border-blue-600 bg-blue-600 text-white font-bold hover:bg-blue-700' : 'border-cesi-border text-gray-600 hover:bg-gray-100'} ${hoveredDay?.dateKey === cell.dateKey ? 'ring-2 ring-blue-300' : ''}`}
             >
               {cell.day}
             </button>
@@ -234,16 +264,16 @@ function ExerciseDashboard({ sessions, sessionsLoaded, now }) {
         })}
       </div>
 
-      {selectedDay?.info && (
+      {hoveredDay?.info && (
         <div className="mt-4 border border-cesi-border bg-blue-50 p-4">
           <p className="text-sm font-bold text-cesi-primary">
-            Détail du {new Date(selectedDay.dateKey).toLocaleDateString('fr-FR')}
+            Détail du {new Date(hoveredDay.dateKey).toLocaleDateString('fr-FR')}
           </p>
           <p className="text-sm text-gray-700 mt-1">
-            Total: {selectedDay.info.total} répétition(s)
+            Total: {hoveredDay.info.total} répétition(s)
           </p>
           <ul className="mt-3 space-y-1 text-sm text-gray-700">
-            {Object.entries(selectedDay.info.byExercise).map(([name, count]) => (
+            {Object.entries(hoveredDay.info.byExercise).map(([name, count]) => (
               <li key={name}>{name} : {count}</li>
             ))}
           </ul>

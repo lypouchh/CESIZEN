@@ -8,6 +8,7 @@ function EditArticle() {
   const [category, setCategory] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
   const { api } = useAuth();
@@ -30,6 +31,7 @@ function EditArticle() {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setIsSubmitting(true);
 
     try {
       await api.put(`/articles/${id}`, { title, content, category });
@@ -37,12 +39,14 @@ function EditArticle() {
       setTimeout(() => navigate('/admin/articles'), 1500);
     } catch (err) {
       setError("Erreur lors de la modification de l'article.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="gov-card">
+    <div className="max-w-4xl mx-auto px-4 sm:px-0">
+      <div className="gov-card p-4 sm:p-6">
         <div className="mb-6">
           <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Administration &rsaquo; Articles</p>
           <h2 className="text-2xl font-bold text-cesi-primary">Modifier l'article</h2>
@@ -63,14 +67,19 @@ function EditArticle() {
 
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-cesi-dark mb-1">Catégorie</label>
-            <input
+            <select
               id="category"
-              type="text"
               className="w-full p-3 border border-cesi-border gov-focus outline-none"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
-            />
+            >
+              <option value="Bien-être">Bien-être</option>
+              <option value="Santé">Santé</option>
+              <option value="Méditation">Méditation</option>
+              <option value="Respiration">Respiration</option>
+              <option value="Stress">Stress</option>
+            </select>
           </div>
           
           <div>
@@ -90,9 +99,10 @@ function EditArticle() {
 
           <button
             type="submit"
-            className="gov-button"
+            disabled={isSubmitting}
+            className="gov-button w-full sm:w-auto px-5 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Enregistrer les modifications
+            {isSubmitting ? 'Enregistrement...' : 'Enregistrer les modifications'}
           </button>
         </form>
       </div>

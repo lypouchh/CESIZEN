@@ -6,7 +6,7 @@ export default function Home() {
       <section className="gov-card overflow-hidden">
         <div className="bg-cesi-primary px-6 py-10 text-white md:px-10">
           <p className="text-xs uppercase tracking-wider opacity-90">Sante mentale et prevention</p>
-          <h1 className="mt-3 text-3xl font-bold text-white md:text-4xl">
+          <h1 className="mt-3 text-3xl font-bold !text-white md:text-4xl" style={{ color: '#ffffff' }}>
             Accompagnement numerique pour mieux gerer votre stress
           </h1>
           <p className="mt-4 max-w-3xl text-sm md:text-base text-blue-50">

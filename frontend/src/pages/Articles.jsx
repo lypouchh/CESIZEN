@@ -6,7 +6,7 @@ export default function Articles() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user } = useAuth();
+  const { user, api } = useAuth();
 
   useEffect(() => {
     fetchArticles();
@@ -14,15 +14,11 @@ export default function Articles() {
 
   const fetchArticles = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/articles');
-      if (response.ok) {
-        const data = await response.json();
-        setArticles(data);
-      } else {
-        setError('Erreur lors du chargement des articles');
-      }
+      const response = await api.get('/articles');
+      setArticles(response.data || []);
+      setError('');
     } catch (err) {
-      setError('Erreur de connexion au serveur');
+      setError(err.response?.data?.message || 'Erreur de connexion au serveur');
     } finally {
       setLoading(false);
     }

@@ -7,49 +7,41 @@ function AddArticle() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('Bien-être');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, api } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setMessage('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/articles', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          title,
-          content,
-          category,
-          id_user: user.id
-        })
+      await api.post('/articles', {
+        title,
+        content,
+        category,
+        id_user: user.id,
       });
 
-      if (response.ok) {
-        setMessage('Article ajouté avec succès !');
-        setTitle('');
-        setContent('');
-        setTimeout(() => navigate('/infos'), 2000);
-      } else {
-        const error = await response.json();
-        setMessage(error.message || 'Erreur lors de l\'ajout.');
-      }
+      setMessage('Article ajouté avec succès !');
+      setTitle('');
+      setContent('');
+      setTimeout(() => navigate('/admin/articles'), 1200);
     } catch (err) {
-      setMessage('Erreur de connexion.');
+      setMessage(err.response?.data?.message || 'Erreur de connexion au serveur.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-0">
+      <div className="mb-5 sm:mb-6">
         <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Administration &rsaquo; Articles</p>
         <h1 className="text-3xl font-bold text-cesi-primary">Ajouter un article</h1>
       </div>
-      <div className="gov-card">
+      <div className="gov-card p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-cesi-dark mb-1">Titre de l'article</label>
@@ -97,9 +89,10 @@ function AddArticle() {
 
           <button
             type="submit"
-            className="gov-button"
+            disabled={isSubmitting}
+            className="gov-button w-full sm:w-auto px-5 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Publier l'article
+            {isSubmitting ? 'Publication en cours...' : "Publier l'article"}
           </button>
         </form>
       </div>

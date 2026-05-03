@@ -15,6 +15,7 @@ export default function Exercise() {
   const [targetRepetitions, setTargetRepetitions] = useState(5);
   const [currentRepetition, setCurrentRepetition] = useState(0);
   const [message, setMessage] = useState('');
+  const [saveEachRepetition, setSaveEachRepetition] = useState(false);
   
   const { user, api } = useAuth();
   
@@ -40,17 +41,33 @@ export default function Exercise() {
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
+      setMessage(error.response?.data?.message || 'Impossible de sauvegarder la session pour le moment.');
     }
   };
 
-  // Fonction pour démarrer/arrêter l'exercice
-  const completeSession = () => {
-    const duration = sessionStartTime ? (Date.now() - sessionStartTime) / 1000 : 0;
-    const breathingRate = selectedMode === '55' ? 6 : selectedMode === '46' ? 5 : 4;
-    const repetitionsDone = Math.max(1, Math.min(currentRepetition || 1, targetRepetitions));
+  const getBreathingRate = () => (selectedMode === '55' ? 6 : selectedMode === '46' ? 5 : 4);
 
-    if (duration > 10 && user) {
-      saveSession(duration, breathingRate, repetitionsDone);
+  // Fonction pour démarrer/arrêter l'exercice
+  const completeSession = ({ repetitionsOverride = null, isCompleted = false } = {}) => {
+    const duration = sessionStartTime ? (Date.now() - sessionStartTime) / 1000 : 0;
+    const breathingRate = getBreathingRate();
+    const effectiveRepetition = repetitionsOverride ?? currentRepetition;
+    const repetitionsDone = Math.max(1, Math.min(effectiveRepetition || 1, targetRepetitions));
+
+    if (!user) {
+      setMessage('Connectez-vous pour sauvegarder vos sessions.');
+    } else if (saveEachRepetition) {
+      if (!isCompleted) {
+        setMessage('Session interrompue. Les répétitions déjà effectuées ont été enregistrées.');
+      }
+    } else if (isCompleted) {
+      if (duration >= 3) {
+        saveSession(duration, breathingRate, repetitionsDone);
+      } else {
+        setMessage('Session trop courte pour etre sauvegardee (minimum 3 secondes).');
+      }
+    } else {
+      setMessage('Session interrompue avant la fin: aucune sauvegarde (mode fin de session).');
     }
 
     setSessionStartTime(null);
@@ -59,7 +76,7 @@ export default function Exercise() {
 
   const toggleExercise = () => {
     if (isActive) {
-      completeSession();
+      completeSession({ isCompleted: false });
     } else {
       setSessionStartTime(Date.now());
       setCurrentRepetition(0);
@@ -113,10 +130,16 @@ export default function Exercise() {
       runCycle();
       const cycleDuration = (mode.inhale + mode.hold + mode.exhale) * 1000;
       interval = setInterval(() => {
+        // In "save each repetition" mode, save only after a full cycle duration has passed.
+        if (saveEachRepetition && user && completedCycles > 0 && completedCycles <= targetRepetitions) {
+          const cycleDurationSeconds = mode.inhale + mode.hold + mode.exhale;
+          void saveSession(cycleDurationSeconds, getBreathingRate(), 1);
+        }
+
         if (completedCycles >= targetRepetitions) {
           clearInterval(interval);
           setPhase('Terminé');
-          completeSession();
+          completeSession({ repetitionsOverride: completedCycles, isCompleted: true });
           return;
         }
         runCycle();
@@ -131,7 +154,7 @@ export default function Exercise() {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [isActive, selectedMode, currentMode, targetRepetitions]);
+  }, [isActive, selectedMode, currentMode, targetRepetitions, saveEachRepetition, user]);
 
   return (
     <div className="min-h-[80vh] py-8">
@@ -192,6 +215,22 @@ export default function Exercise() {
                 disabled={isActive}
               />
             </div>
+
+            <label className="flex items-start gap-2 text-sm text-cesi-dark">
+              <input
+                type="checkbox"
+                className="mt-1 gov-focus"
+                checked={saveEachRepetition}
+                onChange={(e) => setSaveEachRepetition(e.target.checked)}
+                disabled={isActive}
+              />
+              <span>
+                Enregistrer chaque répétition individuellement
+                <span className="block text-xs text-gray-500">
+                  Désactivé: une seule sauvegarde à la fin de la session complète.
+                </span>
+              </span>
+            </label>
 
             {isActive && (
               <p className="text-sm text-cesi-primary font-semibold">

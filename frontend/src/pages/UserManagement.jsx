@@ -149,7 +149,55 @@ function UserManagement() {
       )}
 
       {!loading && !error && (
-        <div className="bg-white overflow-hidden border border-cesi-border">
+        <>
+          <div className="space-y-3 md:hidden">
+            {users.map(u => (
+              <article key={u.id} className={`gov-card p-4 ${!u.isActive ? 'opacity-50' : ''}`}>
+                <p className="font-semibold text-cesi-dark">{`${u.firstname} ${u.lastname}`}</p>
+                <p className="text-sm text-gray-600 mt-1">{u.email}</p>
+                <p className="text-sm mt-2">
+                  {isAdminRow(u) ? (
+                    <span className="font-bold text-red-700">
+                      {u.isSuperAdmin ? 'Super Admin' : 'Admin'}{isCurrentUser(u) ? ' (vous)' : ''}
+                    </span>
+                  ) : (
+                    <span className="text-gray-700">Utilisateur{isCurrentUser(u) ? ' (vous)' : ''}</span>
+                  )}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-4">
+                  {(!isCurrentUser(u) && !isAdminRow(u)) && (
+                    <>
+                      <button
+                        onClick={() => toggleUserStatus(u.id)}
+                        className={`font-bold gov-focus text-sm ${u.isActive ? 'text-orange-600 hover:underline' : 'text-green-600 hover:underline'}`}
+                      >
+                        {u.isActive ? 'Désactiver' : 'Activer'}
+                      </button>
+                      <button onClick={() => deleteUser(u.id)} className="text-red-700 hover:underline font-bold gov-focus text-sm">Supprimer</button>
+                    </>
+                  )}
+
+                  {(isSuperAdmin && !isCurrentUser(u) && isAdminRow(u) && !u.isSuperAdmin) && (
+                    <>
+                      <button
+                        onClick={() => toggleUserStatus(u.id)}
+                        className={`font-bold gov-focus text-sm ${u.isActive ? 'text-orange-600 hover:underline' : 'text-green-600 hover:underline'}`}
+                      >
+                        {u.isActive ? 'Désactiver' : 'Activer'}
+                      </button>
+                      <button onClick={() => deleteUser(u.id)} className="text-red-700 hover:underline font-bold gov-focus text-sm">Supprimer</button>
+                    </>
+                  )}
+
+                  {(isCurrentUser(u) || u.isSuperAdmin) && (
+                    <span className="text-sm text-gray-500">Aucune action</span>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="bg-white overflow-hidden border border-cesi-border hidden md:block">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -194,6 +242,7 @@ function UserManagement() {
                         >
                           {u.isActive ? 'Désactiver' : 'Activer'}
                         </button>
+                        <button onClick={() => deleteUser(u.id)} className="text-red-700 hover:underline font-bold gov-focus">Supprimer</button>
                       </>
                     )}
 
@@ -205,7 +254,8 @@ function UserManagement() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </section>
   );
