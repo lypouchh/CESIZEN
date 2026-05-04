@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Exercise from './pages/Exercise';
@@ -140,10 +140,61 @@ function AppFooter() {
   );
 }
 
+function RouteTitleManager() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (pathname === '/') {
+      document.title = 'CESIZEN-ACCUEIL';
+      return;
+    }
+
+    if (pathname === '/infos' || pathname.startsWith('/article/')) {
+      document.title = 'CESIZEN-Informations';
+      return;
+    }
+
+    if (pathname === '/exercise') {
+      document.title = 'CESIZEN-exercice';
+      return;
+    }
+
+    if (pathname === '/login') {
+      document.title = 'CESIZEN-Connexion';
+      return;
+    }
+
+    if (pathname === '/register') {
+      document.title = 'CESIZEN-Inscription';
+      return;
+    }
+
+    if (pathname === '/profile') {
+      document.title = 'CESIZEN-Profil';
+      return;
+    }
+
+    if (pathname.startsWith('/admin/users')) {
+      document.title = 'CESIZEN-Administration Utilisateurs';
+      return;
+    }
+
+    if (pathname.startsWith('/admin/articles') || pathname === '/admin/add-article') {
+      document.title = 'CESIZEN-Administration articles';
+      return;
+    }
+
+    document.title = 'CESIZEN';
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <RouteTitleManager />
         <Navigation />
         <main className="gov-page">
           <Routes>

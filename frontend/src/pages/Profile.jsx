@@ -6,6 +6,7 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
   const [firstname, setFirstname] = useState(user.firstname || '');
   const [lastname, setLastname] = useState(user.lastname || '');
   const [email, setEmail] = useState(user.email || '');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -14,8 +15,14 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
     setError('');
     setMessage('');
 
+    if (!currentPassword.trim()) {
+      setError('Veuillez renseigner votre mot de passe actuel pour enregistrer les modifications.');
+      return;
+    }
+
     try {
-      await updateUser({ firstname, lastname, email });
+      await updateUser({ firstname, lastname, email, current_password: currentPassword });
+      setCurrentPassword('');
       setMessage('Profil mis à jour avec succès.');
     } catch (err) {
       setError(err.response?.data?.message || 'Impossible de mettre à jour le profil.');
@@ -51,7 +58,7 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
         {error && <div className="mb-4 rounded-md bg-red-50 border border-red-200 p-4 text-red-700">{error}</div>}
         {message && <div className="mb-4 rounded-md bg-green-50 border border-green-200 p-4 text-green-700">{message}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div className="grid gap-6 md:grid-cols-2">
             <div>
               <label htmlFor="profile-firstname" className="block text-sm font-medium text-cesi-dark mb-2">Prénom</label>
@@ -84,6 +91,19 @@ function ProfileForm({ user, logout, updateUser, deleteAccount, navigate }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-3 border border-cesi-border gov-focus outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="profile-current-password" className="block text-sm font-medium text-cesi-dark mb-2">Mot de passe actuel</label>
+            <input
+              id="profile-current-password"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full p-3 border border-cesi-border gov-focus outline-none"
+              placeholder="Saisissez votre mot de passe pour confirmer"
+              aria-required="true"
             />
           </div>
 

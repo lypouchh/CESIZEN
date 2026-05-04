@@ -8,6 +8,41 @@ export default function Articles() {
   const [error, setError] = useState('');
   const { user, api } = useAuth();
 
+  const getExcerpt = (article) => {
+    if (typeof article?.excerpt === 'string' && article.excerpt.trim()) {
+      return article.excerpt;
+    }
+
+    if (typeof article?.content === 'string' && article.content.trim()) {
+      return `${article.content.slice(0, 150)}${article.content.length > 150 ? '...' : ''}`;
+    }
+
+    return 'Contenu indisponible pour cet article.';
+  };
+
+  const getAuthorName = (article) => {
+    const author = article?.user || article?.author;
+    if (!author) {
+      return 'Auteur inconnu';
+    }
+
+    const firstname = author.firstname || '';
+    const lastname = author.lastname || '';
+    const fullName = `${firstname} ${lastname}`.trim();
+    return fullName || author.name || 'Auteur inconnu';
+  };
+
+  const formatArticleDate = (value) => {
+    if (!value) {
+      return 'Date indisponible';
+    }
+
+    const parsedDate = new Date(value);
+    return Number.isNaN(parsedDate.getTime())
+      ? 'Date indisponible'
+      : parsedDate.toLocaleDateString('fr-FR');
+  };
+
   useEffect(() => {
     fetchArticles();
   }, []);
@@ -86,12 +121,12 @@ export default function Articles() {
               <article key={article.id} className="gov-card p-5 flex flex-col justify-between">
                 <div className="mb-4">
                   <h2 className="text-xl font-bold text-cesi-primary mb-3">{article.title}</h2>
-                  <p className="text-gray-700 text-sm">{article.excerpt || article.content.substring(0, 150) + '...'}</p>
+                  <p className="text-gray-700 text-sm">{getExcerpt(article)}</p>
                 </div>
 
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>Par {article.author?.firstname} {article.author?.lastname}</span>
-                  <span>{new Date(article.created_at).toLocaleDateString('fr-FR')}</span>
+                  <span>Par {getAuthorName(article)}</span>
+                  <span>{formatArticleDate(article.created_at)}</span>
                 </div>
 
                 <div className="mt-4">

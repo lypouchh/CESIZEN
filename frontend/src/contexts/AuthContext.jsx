@@ -96,8 +96,8 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (userData) => {
     try {
-      const { firstname, lastname, email } = userData;
-      const response = await api.put('/user', { firstname, lastname, email });
+      const { firstname, lastname, email, current_password } = userData;
+      const response = await api.put('/user', { firstname, lastname, email, current_password });
       setUser(response.data);
       return response.data;
     } catch (error) {
