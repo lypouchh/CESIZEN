@@ -1,0 +1,59 @@
+# Laravel
+backend/node_modules
+backend/vendor
+backend/.env
+backend/.env.local
+backend/.env.*.local
+backend/.DS_Store
+backend/Thumbs.db
+backend/.idea
+backend/.vscode
+backend/*.log
+backend/storage/logs/*.log
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/bootstrap/cache/*
+backend/database.sqlite
+
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/.DS_Store
+frontend/Thumbs.db
+frontend/.idea
+frontend/.vscode
+frontend/*.log
+
+# Docker
+.env.local
+.env.*.local
+docker-volumes
+mysql_data
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+package-lock.json
+yarn.lock
+
+# Misc
+.cache
+*.pem
+*.key
+.env
+.env.docker
