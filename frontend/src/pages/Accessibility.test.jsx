@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
@@ -80,6 +81,7 @@ describe('Frontend accessibility', () => {
     );
 
     await screen.findByRole('heading', { name: /Mon Profil/i });
+    await userEvent.click(screen.getByRole('button', { name: /Exercices/i }));
     await screen.findByText(/Aucune séance enregistrée pour le moment/i);
 
     const results = await axe(container);

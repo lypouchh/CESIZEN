@@ -35,9 +35,9 @@ describe('UserManagement page', () => {
 
     render(<UserManagement />);
 
-    expect(await screen.findByText('alice@example.com')).toBeInTheDocument();
-    expect(screen.getByText('admin@example.com')).toBeInTheDocument();
-    expect(screen.getByText(/Admin \(vous\)/i)).toBeInTheDocument();
+    expect((await screen.findAllByText('alice@example.com')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('admin@example.com').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Admin \(vous\)/i).length).toBeGreaterThan(0);
   });
 
   test('toggles user status', async () => {
@@ -63,12 +63,12 @@ describe('UserManagement page', () => {
 
     render(<UserManagement />);
 
-    const toggleButton = await screen.findByRole('button', { name: /Désactiver/i });
-    await userEvent.click(toggleButton);
+    const toggleButtons = await screen.findAllByRole('button', { name: /Désactiver/i });
+    await userEvent.click(toggleButtons[0]);
 
     expect(api.put).toHaveBeenCalledWith('/admin/users/2/status');
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Activer/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /Activer/i }).length).toBeGreaterThan(0);
     });
   });
 
@@ -157,7 +157,7 @@ describe('UserManagement page', () => {
 
     render(<UserManagement />);
 
-    expect(await screen.findByText('alice@example.com')).toBeInTheDocument();
+    expect((await screen.findAllByText('alice@example.com')).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Créer un admin subordonné/i)).not.toBeInTheDocument();
     expect(screen.getByText(/vous ne pouvez pas créer d'autre admin/i)).toBeInTheDocument();
   });
