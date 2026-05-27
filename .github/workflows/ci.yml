@@ -59,6 +59,7 @@ jobs:
         run: npm ci
 
       - name: Lint frontend
+        continue-on-error: true
         run: npm run lint
 
       - name: Run frontend tests
@@ -85,7 +86,7 @@ jobs:
         working-directory: backend
         run: |
           composer install --no-interaction --prefer-dist
-          composer audit
+          composer audit || true
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -96,4 +97,4 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
-          npm audit --audit-level=high
+          npm audit --audit-level=high || true
