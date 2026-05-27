@@ -59,14 +59,38 @@ describe('Profile page', () => {
     const firstNameInput = screen.getByLabelText('Prénom');
     await userEvent.clear(firstNameInput);
     await userEvent.type(firstNameInput, 'New');
+    await userEvent.type(screen.getByLabelText('Mot de passe actuel'), 'password123');
     await userEvent.click(screen.getByRole('button', { name: /Enregistrer les modifications/i }));
 
     expect(updateUserMock).toHaveBeenCalledWith({
       firstname: 'New',
       lastname: 'Name',
       email: 'old@example.com',
+      current_password: 'password123',
     });
     expect(await screen.findByText(/Profil mis à jour avec succès/i)).toBeInTheDocument();
+  });
+
+  test('shows explicit error when current password is missing', async () => {
+    const updateUserMock = vi.fn();
+    useAuth.mockReturnValue({
+      user: { id: 9, firstname: 'Old', lastname: 'Name', email: 'old@example.com' },
+      logout: vi.fn(),
+      updateUser: updateUserMock,
+      deleteAccount: vi.fn(),
+      api: { get: vi.fn().mockResolvedValue({ data: [] }) },
+    });
+
+    render(
+      <MemoryRouter>
+        <Profile />
+      </MemoryRouter>
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Enregistrer les modifications/i }));
+
+    expect(updateUserMock).not.toHaveBeenCalled();
+    expect(await screen.findByText(/Veuillez renseigner votre mot de passe actuel pour enregistrer les modifications/i)).toBeInTheDocument();
   });
 
   test('deletes account when confirmed', async () => {

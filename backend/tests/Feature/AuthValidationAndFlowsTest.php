@@ -209,9 +209,64 @@ class AuthValidationAndFlowsTest extends TestCase
             'firstname' => 'A',
             'lastname' => 'User',
             'email' => 'b@example.com',
+            'current_password' => 'password123',
         ]);
 
         $response->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
+
+    public function test_update_profile_requires_current_password(): void
+    {
+        $this->seedRoles();
+        $user = $this->makeUser(['email' => 'profile@example.com']);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/user', [
+            'firstname' => 'Profile',
+            'lastname' => 'User',
+            'email' => 'profile@example.com',
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['current_password']);
+    }
+
+    public function test_update_profile_rejects_wrong_current_password(): void
+    {
+        $this->seedRoles();
+        $user = $this->makeUser(['email' => 'profile@example.com']);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/user', [
+            'firstname' => 'Updated',
+            'lastname' => 'User',
+            'email' => 'profile@example.com',
+            'current_password' => 'wrong-password',
+        ]);
+
+        $response->assertStatus(422)->assertJsonFragment(['message' => 'Le mot de passe actuel est incorrect.']);
+    }
+
+    public function test_update_profile_accepts_valid_current_password(): void
+    {
+        $this->seedRoles();
+        $user = $this->makeUser(['email' => 'profile@example.com']);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->putJson('/api/user', [
+            'firstname' => 'Updated',
+            'lastname' => 'Name',
+            'email' => 'updated@example.com',
+            'current_password' => 'password123',
+        ]);
+
+        $response->assertOk()->assertJsonPath('email', 'updated@example.com');
+
+        $user->refresh();
+        $this->assertSame('Updated', $user->firstname);
+        $this->assertSame('updated@example.com', $user->email);
     }
 
     public function test_user_endpoint_returns_role_relation(): void

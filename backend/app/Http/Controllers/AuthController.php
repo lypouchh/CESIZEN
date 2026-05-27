@@ -217,7 +217,12 @@ class AuthController extends Controller
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'current_password' => 'required',
         ]);
+
+        if (!Hash::check($request->current_password, $user->passwordHash)) {
+            return response()->json(['message' => 'Le mot de passe actuel est incorrect.'], 422);
+        }
 
         $user->firstname = $request->firstname;
         $user->lastname = $request->lastname;

@@ -1,0 +1,50 @@
+name: Feature request
+about: Proposer une evolution fonctionnelle ou technique
+title: "[FEATURE] "
+labels: ["enhancement", "triage"]
+description: Formaliser une demande d'evolution.
+body:
+  - type: input
+    id: module
+    attributes:
+      label: Module concerne
+      placeholder: Comptes, Informations, Exercices...
+    validations:
+      required: true
+
+  - type: textarea
+    id: need
+    attributes:
+      label: Besoin metier
+      description: Quel probleme utilisateur veut-on resoudre ?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution proposee
+      description: Fonctionnement attendu, contraintes UX/techniques.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criteres d'acceptation
+      placeholder: |
+        - [ ] Critere 1
+        - [ ] Critere 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorite
+      options:
+        - P1
+        - P2
+        - P3
+    validations:
+      required: true

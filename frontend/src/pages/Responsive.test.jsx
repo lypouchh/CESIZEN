@@ -73,9 +73,10 @@ describe('Frontend responsive structure', () => {
 
     await screen.findByRole('heading', { name: /Mon Profil/i });
 
-    const pageWrapper = findElementByClasses(container, ['min-h-[90vh]', 'px-4', 'sm:px-6', 'lg:px-8']);
+    const pageWrapper = findElementByClasses(container, ['space-y-6', 'px-4', 'sm:px-6', 'lg:px-8', 'pt-6', 'pb-10']);
     const actionGrid = findElementByClasses(container, ['grid', 'gap-4', 'md:grid-cols-2']);
 
+    expect(pageWrapper).toBeInTheDocument();
     expect(pageWrapper).toHaveClass('px-4', 'sm:px-6', 'lg:px-8');
     expect(actionGrid).toBeInTheDocument();
   });

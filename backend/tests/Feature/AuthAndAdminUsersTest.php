@@ -118,6 +118,7 @@ class AuthAndAdminUsersTest extends TestCase
             'firstname' => 'New',
             'lastname' => 'Name',
             'email' => 'new@example.com',
+            'current_password' => 'password123',
         ]);
 
         $response

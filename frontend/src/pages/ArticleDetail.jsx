@@ -7,7 +7,7 @@ export default function ArticleDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, api } = useAuth();
 
   useEffect(() => {
     fetchArticle();
@@ -15,10 +15,9 @@ export default function ArticleDetail() {
 
   const fetchArticle = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/articles/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setArticle(data);
+      const response = await api.get(`/articles/${id}`);
+      if (response.data) {
+        setArticle(response.data);
       } else {
         setError('Article non trouvé');
       }
