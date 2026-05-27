@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // Add CORS middleware
         $middleware->append(\App\Http\Middleware\Cors::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

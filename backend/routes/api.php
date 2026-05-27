@@ -9,8 +9,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 
 // Routes Publiques
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
@@ -41,8 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Routes pour la récupération de mot de passe
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:auth-password-reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:auth-password-reset');
 Route::post('/register-admin-secret', [AuthController::class, 'registerAdmin']);
 
 // Routes Publiques pour Articles et Exercises

@@ -1,0 +1,57 @@
+name: Bug report
+about: Signaler une anomalie de production ou recette
+title: "[BUG] "
+labels: ["bug", "triage"]
+description: Créer un ticket d'anomalie exploitable par l'équipe.
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Criticite
+      options:
+        - Critique (service indisponible)
+        - Haute (fonction majeure bloquee)
+        - Moyenne
+        - Faible
+    validations:
+      required: true
+
+  - type: input
+    id: module
+    attributes:
+      label: Module concerne
+      placeholder: Comptes, Informations, Exercices...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Etapes de reproduction
+      description: Liste numerotee claire
+      placeholder: |
+        1. Aller sur ...
+        2. Cliquer sur ...
+        3. Observer ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Resultat attendu
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Resultat observe
+    validations:
+      required: true
+
+  - type: textarea
+    id: traces
+    attributes:
+      label: Logs, captures, contexte
+      description: Ajouter les preuves utiles (logs, stacktrace, capture ecran).
