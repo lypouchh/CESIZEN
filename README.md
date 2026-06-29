@@ -1,72 +1,92 @@
-# CESIZEN - Workflow Git propre (TP1)
+# CESIZEN
 
-Ce document formalise les regles Git et les controles qualite mis en place sur le depot.
+Application web CESIZEN (backend Laravel + frontend Vite/React) avec un workflow Git propre et des controles qualite au commit.
 
-## 1) Strategie Git (GitFlow simplifie)
+## Workflow Git
 
-Branches principales:
-- `main`: branche de production (stable)
+### Strategie de branches
+- `main`: branche stable de production
 - `develop`: branche d'integration
+- `feature/*`: nouvelles fonctionnalites, creees depuis `develop`
+- `hotfix/*`: corrections urgentes, creees depuis `main`
 
-Branches temporaires:
-- `feature/*`: developpement de fonctionnalites (base sur `develop`)
-- `hotfix/*`: correction urgente (base sur `main`)
+### Flux recommande
+1. Mettre a jour `develop`.
+2. Creer une branche `feature/...` depuis `develop`.
+3. Commiter en Conventional Commits.
+4. Ouvrir une Pull Request vers `develop`.
+5. Merger `develop` vers `main` via PR de release.
 
-Workflow recommande:
-1. Creer une branche feature depuis `develop`.
-2. Commiter avec une convention Conventional Commits.
-3. Ouvrir une Pull Request vers `develop`.
-4. Faire valider la PR, puis merger.
-5. Merger `develop` vers `main` uniquement via PR de release.
-
-Commandes utilisees pour ce TP:
+Exemple:
 ```bash
-git checkout -b develop origin/main
-git push -u origin develop
-git checkout -b feature/init-husky develop
+git checkout develop
+git pull origin develop
+git checkout -b feature/ma-fonctionnalite
 ```
 
-## 2) Convention de commit
+## Qualite des commits (Husky + Commitlint)
 
-Le projet applique Conventional Commits via `commitlint`.
+Le depot utilise Husky a la racine.
 
-Formats acceptes (exemples):
-- `feat: add login form validation`
-- `fix: handle null profile picture`
-- `chore: update dependencies`
-- `docs: add deployment checklist`
-- `refactor: simplify auth service`
-- `test: add profile page tests`
-
-Un message non conforme (ex: `update code`) est refuse au commit.
-
-## 3) Hooks Husky actifs
-
-Husky est configure a la racine du depot.
-
-Hooks:
+Hooks actifs:
 - `.husky/pre-commit`: execute `npm run lint:staged`
 - `.husky/commit-msg`: execute `npx commitlint --edit "$1"`
 
-Scripts NPM racine:
+Scripts racine:
 - `prepare`: `husky install`
 - `lint`: `npm --prefix frontend run lint`
 - `lint:staged`: lint uniquement les fichiers JS/JSX stages dans `frontend/`
 
-## 4) Protection de branches (GitHub)
+Exemples de messages acceptes:
+- `feat: add breathing session history`
+- `fix: handle expired auth token`
+- `docs: update docker startup guide`
 
-A configurer dans `Settings > Branches` sur `main` et `develop`:
+## Protection des branches (GitHub)
+
+Recommande pour `main` et `develop`:
 - Require a pull request before merging
 - Require status checks to pass before merging
-- Require approvals (au moins 1 reviewer)
-- Restrict who can push to matching branches (ou bloquer push direct)
-- (Optionnel) Require linear history
+- Restrict direct push
+- Require approvals (selon votre organisation)
 
-## 5) Livrables TP1
+## Lancement du projet avec Docker
 
-- [x] Branches `main`, `develop`, `feature/init-husky`
-- [x] Husky installe et hooks actifs
-- [x] Verification de message de commit avec commitlint
-- [x] Fichier `commitlint.config.js`
-- [ ] Screenshots des protections de branches (a faire dans GitHub)
-- [ ] Pull Request `feature/init-husky` -> `develop` (a ouvrir)
+## Prerequis
+- Docker Desktop (ou Docker Engine + Compose)
+- Git
+
+### Demarrage rapide
+
+Windows:
+```bash
+docker-init.bat
+```
+
+macOS / Linux:
+```bash
+chmod +x docker-init.sh
+./docker-init.sh
+```
+
+Manuel:
+```bash
+docker-compose up -d
+docker-compose exec laravel php artisan migrate
+docker-compose exec laravel php artisan db:seed
+```
+
+### Acces services
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- MySQL: localhost:3306
+
+### Commandes utiles
+```bash
+docker-compose ps
+docker-compose logs -f
+docker-compose down
+docker-compose exec laravel php artisan test
+```
+
+Pour la doc Docker detaillee, voir `DOCKER_SETUP.md`.
