@@ -1,14 +1,22 @@
-name: CI
+name: CI Local Runner
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
-    branches: [main, dev]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend-tests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     defaults:
       run:
         working-directory: backend
@@ -22,6 +30,7 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, pdo_sqlite
+          coverage: pcov
           tools: composer
 
       - name: Cache Composer dependencies
@@ -39,7 +48,7 @@ jobs:
         run: php artisan test
 
   frontend-quality:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     defaults:
       run:
         working-directory: frontend
@@ -59,7 +68,6 @@ jobs:
         run: npm ci
 
       - name: Lint frontend
-        continue-on-error: true
         run: npm run lint
 
       - name: Run frontend tests
@@ -68,33 +76,45 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-  security-audit:
-    runs-on: ubuntu-latest
-    continue-on-error: true
+  sonarcloud:
+    if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_ORG != '' && secrets.SONAR_PROJECT_KEY != '' }}
+    runs-on: [self-hosted, linux]
+    needs: [backend-tests, frontend-quality]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          tools: composer
-
-      - name: Composer audit
-        working-directory: backend
-        run: |
-          composer install --no-interaction --prefer-dist
-          composer audit || true
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: NPM audit
-        working-directory: frontend
-        run: |
-          npm ci
-          npm audit --audit-level=high || true
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          args: >
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORG }}
+            -Dsonar.sources=backend/app,backend/routes,frontend/src
+            -Dsonar.tests=backend/tests,frontend/src
+            -Dsonar.test.inclusions=backend/tests/**/*.php,frontend/src/**/*.test.jsx
+            -Dsonar.exclusions=backend/vendor/**,frontend/node_modules/**,backend/storage/**,backend/bootstrap/cache/**,frontend/dist/**
+            -Dsonar.sourceEncoding=UTF-8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - name: SonarCloud Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
