@@ -12,4 +12,5 @@ echo "Linting staged frontend files..."
 frontend_files=$(echo "$staged_files" | sed 's#^frontend/##')
 
 # Run eslint in frontend context only on staged files.
-npm --prefix frontend exec eslint -- $frontend_files
+cd frontend
+npx eslint -- $frontend_files

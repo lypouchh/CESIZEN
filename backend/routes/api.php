@@ -11,8 +11,9 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 // Routes Publiques
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
+Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:auth-login');
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:api,sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::delete('/user', [AuthController::class, 'destroyAccount']);
@@ -49,4 +50,4 @@ Route::post('/register-admin-secret', [AuthController::class, 'registerAdmin']);
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show']);
 Route::apiResource('exercises', ExerciseController::class)->only(['index', 'show']);
 Route::get('sessions', [RespirationSessionController::class, 'index']);
-Route::middleware('auth:sanctum')->post('sessions', [RespirationSessionController::class, 'store']);
+Route::middleware('auth:api,sanctum')->post('sessions', [RespirationSessionController::class, 'store']);

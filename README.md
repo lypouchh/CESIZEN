@@ -50,6 +50,25 @@ Recommande pour `main` et `develop`:
 - Restrict direct push
 - Require approvals (selon votre organisation)
 
+## Authentification API (JWT)
+
+Le backend Laravel utilise des JWT courts avec refresh token rotatif:
+- `access_token` JWT (duree courte, `JWT_TTL=15` minutes)
+- `refresh_token` opaque stocke cote serveur sous forme hachee et envoye en cookie `HttpOnly`
+
+Endpoints auth:
+- `POST /api/login`
+- `POST /api/register`
+- `POST /api/refresh`
+- `POST /api/logout`
+- `GET /api/user` (route protegee)
+
+Configuration principale dans `backend/.env`:
+- `JWT_SECRET`
+- `JWT_TTL`
+- `JWT_REFRESH_TOKEN_TTL`
+- `JWT_REFRESH_COOKIE_NAME`
+
 ## Lancement du projet avec Docker
 
 ## Prerequis
