@@ -1,0 +1,15 @@
+{
+  "name": "applicesizen",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "npm --prefix frontend run lint",
+    "lint:staged": "bash ./scripts/lint-staged.sh"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "husky": "^9.1.7"
+  }
+}
