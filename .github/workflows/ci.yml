@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   backend-tests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     env:
       JWT_SECRET: ci-test-secret-ci-test-secret-ci-test-secret-ci-test-secret
     defaults:
@@ -50,7 +50,7 @@ jobs:
         run: php artisan test
 
   frontend-quality:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     defaults:
       run:
         working-directory: frontend
@@ -78,9 +78,43 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+  migration-sql:
+    runs-on: [self-hosted, linux]
+    needs: [backend-tests, frontend-quality]
+    env:
+      JWT_SECRET: ci-test-secret-ci-test-secret-ci-test-secret-ci-test-secret
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_sqlite
+          tools: composer
+
+      - name: Install backend dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Generate SQL migration script (CI only)
+        run: |
+          bash ../scripts/generate-migration-sql.sh
+
+      - name: Upload SQL migration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-sql-script
+          path: artifacts/migration.sql
+          if-no-files-found: error
+          retention-days: 14
+
   sonarcloud:
-    if: ${{ vars.SONAR_CI_ENABLED == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: [backend-tests, frontend-quality]
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -15,6 +15,8 @@ backend/storage/framework/sessions/*
 backend/storage/framework/views/*
 backend/bootstrap/cache/*
 backend/database.sqlite
+backend/artifacts/
+backend/database/ci-migrations.sqlite
 
 # Frontend
 frontend/node_modules
