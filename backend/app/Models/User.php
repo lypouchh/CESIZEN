@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @property int $id
@@ -18,7 +19,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property bool $isActive
  * @property bool $isSuperAdmin
  */
-class User extends Authenticatable {
+class User extends Authenticatable implements JWTSubject {
     use HasApiTokens, HasFactory;
 
    // protected $table = 'User';
@@ -61,5 +62,21 @@ class User extends Authenticatable {
     public function favoriteArticles()
     {
         return $this->belongsToMany(Article::class, 'article_user', 'user_id', 'article_id')->withTimestamps();
+    }
+
+    /**
+     * JWT identifier claim (sub).
+     */
+    public function getJWTIdentifier(): mixed
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Custom JWT claims.
+     */
+    public function getJWTCustomClaims(): array
+    {
+        return [];
     }
 }

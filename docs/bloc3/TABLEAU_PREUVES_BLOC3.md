@@ -104,3 +104,8 @@ Resultat:
 - Ajouter scan SAST/secret scanning bloqueur dans la CI.
 - Formaliser le registre RGPD (finalites, base legale, retention, droits).
 - Prevoir runbook incident securite avec matrice d'escalade nominative.
+
+## 8) Documentation operationnelle associee
+
+- `docs/bloc3/GUIDE_DEPLOIEMENT_PRODUCTION.md`
+- `docs/bloc3/CHECKLIST_DEPLOIEMENT_ET_RECETTE.md`

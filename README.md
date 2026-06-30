@@ -56,7 +56,7 @@ Recommande pour `main` et `develop`:
 ## Integration Continue (CI)
 
 Le pipeline GitHub Actions est defini pour tourner sur un runner local self-hosted:
-- Declencheurs: push et pull_request sur main
+- Declencheurs: push et pull_request sur develop et main
 - Jobs: backend tests, frontend lint/build/tests, scan SonarCloud + Quality Gate
 
 Fichier pipeline:
