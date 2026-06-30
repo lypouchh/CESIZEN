@@ -107,6 +107,7 @@ jobs:
   sonarcloud:
     runs-on: [self-hosted, linux]
     needs: [backend-tests, frontend-quality]
+    if: ${{ github.event_name != 'pull_request' }}
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_ORG: ${{ secrets.SONAR_ORG }}
