@@ -6,15 +6,13 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(null);
 
   const storeTokens = useCallback((nextAccessToken) => {
-    localStorage.setItem('token', nextAccessToken);
     setToken(nextAccessToken);
   }, []);
 
   const clearSession = useCallback(() => {
-    localStorage.removeItem('token');
     setToken(null);
     setUser(null);
   }, []);
@@ -49,9 +47,8 @@ export const AuthProvider = ({ children }) => {
     // On utilise un intercepteur pour ajouter le token dynamiquement à chaque requête.
     // C'est plus robuste que de le définir une seule fois.
     axiosInstance.interceptors.request.use(config => {
-      const currentToken = localStorage.getItem('token');
-      if (currentToken) {
-        config.headers.Authorization = `Bearer ${currentToken}`;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     });
@@ -96,7 +93,7 @@ export const AuthProvider = ({ children }) => {
     );
 
     return axiosInstance;
-  }, [clearSession, storeTokens]);
+  }, [clearSession, storeTokens, token]);
   
   const register = async (firstname, lastname, email, password, password_confirmation) => {
     try {
@@ -175,17 +172,53 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Vérifier si l'utilisateur est déjà connecté au chargement de la page
+  // Bootstrap de session: tenter un refresh via cookie HttpOnly, puis charger l'utilisateur.
   useEffect(() => {
-    if (token && !user) {
-      api.get('/user')
-        .then(response => setUser(response.data))
-        .catch(() => {
-          // Si le token est invalide, on nettoie
+    let cancelled = false;
+
+    const hydrateUser = async () => {
+      if (!token || user) {
+        return;
+      }
+
+      try {
+        const response = await api.get('/user');
+        if (!cancelled) {
+          setUser(response.data);
+        }
+      } catch {
+        if (!cancelled) {
           clearSession();
-        });
-    } // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, user]); // On ajoute 'user' pour éviter une boucle si l'utilisateur est déjà chargé
+        }
+      }
+    };
+
+    const bootstrapFromRefresh = async () => {
+      if (token) {
+        await hydrateUser();
+        return;
+      }
+
+      try {
+        const refreshResponse = await api.post('/refresh');
+        const nextAccessToken = refreshResponse.data.access_token ?? refreshResponse.data.token;
+
+        if (!nextAccessToken || cancelled) {
+          return;
+        }
+
+        storeTokens(nextAccessToken);
+      } catch {
+        // Pas de session active: on reste deconnecte sans bruit.
+      }
+    };
+
+    void bootstrapFromRefresh();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [api, clearSession, storeTokens, token, user]);
 
   return (
     <AuthContext.Provider value={{ user, token, api, register, login, logout, updateUser, deleteAccount }}>
