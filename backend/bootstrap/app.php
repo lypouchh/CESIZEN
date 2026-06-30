@@ -12,9 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // This application authenticates API calls with bearer tokens.
-        // Enabling Sanctum stateful SPA middleware would force CSRF checks
-        // for first-party frontend requests and break token-based POST calls.
+        // This application authenticates API calls with bearer JWT tokens.
+        // Stateful SPA middleware is intentionally disabled because API auth
+        // is handled via Authorization: Bearer access tokens.
         
         // Add CORS middleware
         $middleware->append(\App\Http\Middleware\Cors::class);

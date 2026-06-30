@@ -72,6 +72,9 @@ export default function Exercise() {
 
     setSessionStartTime(null);
     setIsActive(false);
+      if (!isCompleted) {
+        setPhase('Prêt ?');
+      }
   };
 
   const toggleExercise = () => {
@@ -82,6 +85,7 @@ export default function Exercise() {
       setCurrentRepetition(0);
       setMessage('');
       setIsActive(true);
+        setPhase('Prêt ?');
     }
   };
 
@@ -144,10 +148,8 @@ export default function Exercise() {
         }
         runCycle();
       }, cycleDuration);
-    } else {
-      setPhase('Prêt ?');
     }
-    
+
     // Nettoyage complet pour éviter les bugs si on change de mode rapidement
     return () => {
       clearInterval(interval);

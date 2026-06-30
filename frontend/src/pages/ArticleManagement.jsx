@@ -15,7 +15,7 @@ function ArticleManagement() {
       const res = await api.get('/articles');
       setArticles(res.data);
       setError('');
-    } catch (err) {
+    } catch {
       setError('Impossible de charger les articles.');
     } finally {
       setLoading(false);
@@ -27,7 +27,7 @@ function ArticleManagement() {
       try {
         await api.delete(`/articles/${id}`);
         setArticles(prevArticles => prevArticles.filter(a => a.id !== id));
-      } catch (err) {
+      } catch {
         setError("Erreur lors de la suppression de l'article.");
       }
     }

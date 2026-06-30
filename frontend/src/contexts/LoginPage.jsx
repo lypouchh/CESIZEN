@@ -15,7 +15,7 @@ const LoginPage = () => {
     try {
       await login(email, password);
       navigate('/'); // Redirige vers la page d'accueil après connexion
-    } catch (err) {
+    } catch {
       setError('Email ou mot de passe incorrect.');
     }
   };

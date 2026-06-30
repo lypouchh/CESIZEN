@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RefreshToken;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -75,7 +77,7 @@ class AuthController extends Controller
         $user->save();
 
         // Force la reconnexion de toutes les sessions existantes.
-        $user->tokens()->delete();
+        $this->revokeAllRefreshTokensForUser($user->id);
 
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
@@ -98,6 +100,7 @@ class AuthController extends Controller
 
         $user->passwordHash = Hash::make($request->new_password);
         $user->save();
+        $this->revokeAllRefreshTokensForUser($user->id);
 
         return response()->json(['message' => 'Mot de passe modifié avec succès.']);
     }
@@ -121,13 +124,16 @@ class AuthController extends Controller
             'isSuperAdmin' => false,
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $tokenData = $this->issueTokenPair($user, $request);
 
         return response()->json([
             'message' => 'Compte créé avec succès.',
             'user' => $user,
-            'token' => $token
-        ], 201);
+            'token' => $tokenData['access_token'],
+            'access_token' => $tokenData['access_token'],
+            'token_type' => 'Bearer',
+            'expires_in' => $tokenData['expires_in'],
+        ], 201)->cookie($this->buildRefreshCookie($tokenData['refresh_token']));
     }
 
     public function registerAdmin(Request $request)
@@ -235,7 +241,7 @@ class AuthController extends Controller
     public function destroyAccount(Request $request)
     {
         $user = $request->user();
-        $user->tokens()->delete();
+        $this->revokeAllRefreshTokensForUser($user->id);
         $user->delete();
 
         return response()->json(['message' => 'Compte supprimé.']);
@@ -307,25 +313,163 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $tokenData = $this->issueTokenPair($user, $request);
 
         return response()->json([
             'user' => $user,
-            'token' => $token,
+            'token' => $tokenData['access_token'],
+            'access_token' => $tokenData['access_token'],
+            'token_type' => 'Bearer',
+            'expires_in' => $tokenData['expires_in'],
+        ])->cookie($this->buildRefreshCookie($tokenData['refresh_token']));
+    }
+
+    public function refresh(Request $request)
+    {
+        $refreshToken = $this->extractRefreshToken($request);
+        if (!$refreshToken) {
+            return response()->json(['message' => 'Refresh token manquant.'], 401);
+        }
+
+        $hashed = hash('sha256', $refreshToken);
+
+        $storedToken = RefreshToken::where('token_hash', $hashed)
+            ->whereNull('revoked_at')
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (!$storedToken) {
+            return response()->json(['message' => 'Refresh token invalide ou expire.'], 401);
+        }
+
+        $user = User::find($storedToken->user_id);
+        if (!$user || !$user->isActive) {
+            return response()->json(['message' => 'Utilisateur invalide ou desactive.'], 401);
+        }
+
+        $newTokenData = $this->issueTokenPair($user, $request);
+        $storedToken->update([
+            'revoked_at' => now(),
+            'replaced_by_token_hash' => hash('sha256', $newTokenData['refresh_token']),
         ]);
+
+        return response()->json([
+            'access_token' => $newTokenData['access_token'],
+            'token_type' => 'Bearer',
+            'expires_in' => $newTokenData['expires_in'],
+        ])->cookie($this->buildRefreshCookie($newTokenData['refresh_token']));
     }
 
     // Déconnexion
     public function logout(Request $request)
     {
-        // Supprime le token actuel
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Déconnexion réussie']);
+        $refreshToken = $this->extractRefreshToken($request);
+
+        if ($refreshToken) {
+            $hashed = hash('sha256', $refreshToken);
+            RefreshToken::where('user_id', $request->user()->id)
+                ->where('token_hash', $hashed)
+                ->whereNull('revoked_at')
+                ->update(['revoked_at' => now()]);
+        }
+
+        try {
+            if (auth('api')->getToken()) {
+                auth('api')->invalidate(true);
+            }
+        } catch (Throwable) {
+            // Token deja invalide ou absent: logout idempotent.
+        }
+
+        return response()->json(['message' => 'Déconnexion réussie'])
+            ->cookie($this->clearRefreshCookie());
     }
 
     // Récupérer l'utilisateur connecté
     public function user(Request $request)
     {
         return $request->user()->load('role');
+    }
+
+    private function issueTokenPair(User $user, Request $request): array
+    {
+        $ttlMinutes = (int) config('jwt.ttl', 15);
+        $accessToken = auth('api')->setTTL($ttlMinutes)->fromUser($user);
+
+        $plainRefreshToken = Str::random(96);
+        $refreshTtlMinutes = (int) env('JWT_REFRESH_TOKEN_TTL', 10080);
+
+        RefreshToken::create([
+            'user_id' => $user->id,
+            'token_hash' => hash('sha256', $plainRefreshToken),
+            'expires_at' => now()->addMinutes($refreshTtlMinutes),
+            'ip_address' => $request->ip(),
+            'user_agent' => Str::limit((string) $request->userAgent(), 255, ''),
+        ]);
+
+        return [
+            'access_token' => $accessToken,
+            'refresh_token' => $plainRefreshToken,
+            'expires_in' => $ttlMinutes * 60,
+        ];
+    }
+
+    private function revokeAllRefreshTokensForUser(int $userId): void
+    {
+        RefreshToken::where('user_id', $userId)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => now()]);
+    }
+
+    private function extractRefreshToken(Request $request): ?string
+    {
+        $fromBody = $request->input('refresh_token');
+        if (is_string($fromBody) && $fromBody !== '') {
+            return $fromBody;
+        }
+
+        $cookieName = (string) env('JWT_REFRESH_COOKIE_NAME', 'refresh_token');
+        $fromCookie = $request->cookie($cookieName);
+
+        return is_string($fromCookie) && $fromCookie !== '' ? $fromCookie : null;
+    }
+
+    private function buildRefreshCookie(string $refreshToken): \Symfony\Component\HttpFoundation\Cookie
+    {
+        $cookieName = (string) env('JWT_REFRESH_COOKIE_NAME', 'refresh_token');
+        $cookieMinutes = (int) env('JWT_REFRESH_TOKEN_TTL', 10080);
+        $secure = app()->environment('production');
+        $sameSite = $secure ? 'none' : 'lax';
+
+        return cookie(
+            $cookieName,
+            $refreshToken,
+            $cookieMinutes,
+            '/',
+            null,
+            $secure,
+            true,
+            false,
+            $sameSite,
+        );
+    }
+
+    private function clearRefreshCookie(): \Symfony\Component\HttpFoundation\Cookie
+    {
+        $cookieName = (string) env('JWT_REFRESH_COOKIE_NAME', 'refresh_token');
+        $secure = app()->environment('production');
+        $sameSite = $secure ? 'none' : 'lax';
+
+        return cookie(
+            $cookieName,
+            '',
+            -1,
+            '/',
+            null,
+            $secure,
+            true,
+            false,
+            $sameSite,
+        );
     }
 }
