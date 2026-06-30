@@ -1,6 +1,6 @@
 # CESIZEN
 
-Application web CESIZEN (backend Laravel + frontend Vite/React) avec un workflow Git propre et des controles qualite au commit.
+Application web CESIZEN (backend Laravel + frontend Vite/React) avec un workflow GitFlow, une CI auto-hebergee et une separation explicite entre CI et CD.
 
 ![CI](https://github.com/lypouchh/CESIZEN/actions/workflows/ci.yml/badge.svg?branch=main)
 ![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=SONAR_PROJECT_KEY&metric=alert_status)
@@ -40,100 +40,99 @@ Scripts racine:
 - `lint`: `npm --prefix frontend run lint`
 - `lint:staged`: lint uniquement les fichiers JS/JSX stages dans `frontend/`
 
-Exemples de messages acceptes:
-- `feat: add breathing session history`
-- `fix: handle expired auth token`
-- `docs: update docker startup guide`
+## Integration Continue (CI)
+
+Fichier pipeline CI: `.github/workflows/ci.yml`
+
+Le pipeline CI tourne sur un runner local self-hosted (`[self-hosted, linux]`) et couvre:
+- installation des dependances backend/frontend
+- tests backend (`php artisan test`)
+- lint, tests et build frontend
+- analyse SonarCloud + Quality Gate
+- generation d'un script SQL de migration publie en artefact
+
+Declencheurs:
+- `push` et `pull_request` sur `develop` et `main`
+- `workflow_dispatch`
+
+### Secrets SonarCloud requis
+- `SONAR_TOKEN`
+- `SONAR_ORG`
+- `SONAR_PROJECT_KEY`
+
+### Runner local (self-hosted)
+1. Ouvrir GitHub: Settings > Actions > Runners > New self-hosted runner.
+2. Choisir Linux x64 et executer les commandes fournies.
+3. Verifier que le runner est `Online` avant de lancer la CI.
+
+## Migration SQL en CI (artefact)
+
+Le pipeline CI genere un script SQL de migration sans l'appliquer sur une base reelle.
+
+Script utilise:
+- `scripts/generate-migration-sql.sh`
+
+Ce script:
+1. cree une base SQLite de travail en CI,
+2. genere le SQL de migration en mode `--pretend`,
+3. ecrit le resultat dans `backend/artifacts/migration.sql`.
+
+Publication artefact:
+- nom artefact: `migration-sql-script`
+- fichier: `backend/artifacts/migration.sql`
+
+Recuperation:
+1. Ouvrir un run CI GitHub Actions.
+2. Aller dans la section Artifacts.
+3. Telecharger `migration-sql-script`.
+
+## Separation CI / CD
+
+### CI (dans ce projet)
+- build, lint, tests, analyse SonarCloud
+- generation et publication de l'artefact SQL de migration
+- aucune application automatique de migration sur un environnement reel
+
+### CD (dans ce projet)
+Fichier pipeline CD: `.github/workflows/cd.yml`
+
+- workflow de deploiement separe du pipeline CI
+- declenchement manuel (`workflow_dispatch`) ou sur tag `v*`
+- rappel explicite: le SQL de migration est produit par la CI mais son application est une operation de deploiement controlee, jamais automatique sur une PR
 
 ## Protection des branches (GitHub)
 
-Recommande pour `main` et `develop`:
-- Require a pull request before merging
-- Require status checks to pass before merging
-- Restrict direct push
-- Require approvals (selon votre organisation)
-
-## Integration Continue (CI)
-
-Le pipeline GitHub Actions est defini pour tourner sur un runner local self-hosted:
-- Declencheurs: push et pull_request sur develop et main
-- Jobs: backend tests, frontend lint/build/tests, scan SonarCloud + Quality Gate
-
-Fichier pipeline:
-- .github/workflows/ci.yml
-
-### Secrets GitHub requis (SonarCloud)
-- SONAR_TOKEN
-- SONAR_ORG
-- SONAR_PROJECT_KEY
-
-Si les secrets SonarCloud ne sont pas configures, le job Sonar est ignore, mais les jobs backend/frontend continuent de tourner.
-
-### Installation rapide du runner local GitHub
-1. Ouvrir Settings > Actions > Runners > New self-hosted runner.
-2. Choisir Linux x64 et suivre les commandes proposees sur la machine locale.
-3. Lancer le runner puis verifier qu il apparait en status Online.
-
-Exemple commandes Linux (adapte depuis GitHub):
-```bash
-mkdir actions-runner && cd actions-runner
-curl -o actions-runner-linux-x64.tar.gz -L https://github.com/actions/runner/releases/latest/download/actions-runner-linux-x64.tar.gz
-tar xzf ./actions-runner-linux-x64.tar.gz
-./config.sh --url https://github.com/lypouchh/CESIZEN --token <RUNNER_TOKEN>
-./run.sh
-```
+Configuration recommandee sur `main` et `develop`:
+- interdire les push directs
+- exiger une PR approuvee
+- exiger les checks CI
+- exiger une Quality Gate verte
 
 ## Authentification API (JWT)
 
 Le backend Laravel utilise des JWT courts avec refresh token rotatif:
-- `access_token` JWT (duree courte, `JWT_TTL=15` minutes)
-- `refresh_token` opaque stocke cote serveur sous forme hachee et envoye en cookie `HttpOnly`
+- `access_token` JWT (duree courte)
+- `refresh_token` stocke cote serveur sous forme hachee et envoye en cookie `HttpOnly`
 
-Endpoints auth:
-- `POST /api/login`
-- `POST /api/register`
-- `POST /api/refresh`
-- `POST /api/logout`
-- `GET /api/user` (route protegee)
-
-Configuration principale dans `backend/.env`:
+Variables principales:
 - `JWT_SECRET`
 - `JWT_TTL`
 - `JWT_REFRESH_TOKEN_TTL`
 - `JWT_REFRESH_COOKIE_NAME`
 
-## Lancement du projet avec Docker
+## Lancement avec Docker
 
-## Prerequis
+Prerequis:
 - Docker Desktop (ou Docker Engine + Compose)
 - Git
 
-### Demarrage rapide
-
-Windows:
-```bash
-docker-init.bat
-```
-
-macOS / Linux:
+Demarrage rapide:
 ```bash
 chmod +x docker-init.sh
 ./docker-init.sh
 ```
 
-Manuel:
-```bash
-docker-compose up -d
-docker-compose exec laravel php artisan migrate
-docker-compose exec laravel php artisan db:seed
-```
-
-### Acces services
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- MySQL: localhost:3306
-
-### Commandes utiles
+Commandes utiles:
 ```bash
 docker-compose ps
 docker-compose logs -f
@@ -141,4 +140,4 @@ docker-compose down
 docker-compose exec laravel php artisan test
 ```
 
-Pour la doc Docker detaillee, voir `DOCKER_SETUP.md`.
+Pour la documentation Docker detaillee, voir `DOCKER_SETUP.md`.

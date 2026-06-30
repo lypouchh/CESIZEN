@@ -1,0 +1,25 @@
+name: CD
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  deployment-plan:
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: CD boundary reminder
+        run: |
+          echo "CD workflow: deployment boundary only"
+          echo "Database migrations are generated in CI as artifacts."
+          echo "This workflow does not auto-apply SQL migration scripts."
+          echo "Apply migration script manually during controlled deployment."
