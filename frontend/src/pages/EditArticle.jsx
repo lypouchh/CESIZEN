@@ -20,7 +20,7 @@ function EditArticle() {
         setTitle(res.data.title);
         setContent(res.data.content);
         setCategory(res.data.category);
-      } catch (err) {
+      } catch {
         setError("Impossible de charger l'article.");
       }
     };
@@ -37,7 +37,7 @@ function EditArticle() {
       await api.put(`/articles/${id}`, { title, content, category });
       setSuccess('Article modifié avec succès !');
       setTimeout(() => navigate('/admin/articles'), 1500);
-    } catch (err) {
+    } catch {
       setError("Erreur lors de la modification de l'article.");
     } finally {
       setIsSubmitting(false);

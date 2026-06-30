@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\RefreshToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -33,7 +34,7 @@ class AuthService
     }
 
     /**
-     * Authentifie un utilisateur et retourne un token Sanctum
+     * Authentifie un utilisateur et retourne un access token JWT.
      */
     public function authenticate(string $email, string $password): ?array
     {
@@ -47,7 +48,7 @@ class AuthService
             return null;
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = auth('api')->setTTL((int) config('jwt.ttl', 15))->fromUser($user);
 
         return [
             'user' => $user,
@@ -72,11 +73,13 @@ class AuthService
     }
 
     /**
-     * Invalide tous les tokens d'un utilisateur (logout)
+     * Invalide tous les refresh tokens d'un utilisateur (logout global).
      */
     public function logout(User $user): void
     {
-        $user->tokens()->delete();
+        RefreshToken::where('user_id', $user->id)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => now()]);
     }
 
     /**
@@ -98,7 +101,9 @@ class AuthService
     public function resetPassword(User $user, string $newPassword): void
     {
         $user->update(['passwordHash' => Hash::make($newPassword)]);
-        $user->tokens()->delete(); // Force logout de toutes les sessions
+        RefreshToken::where('user_id', $user->id)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => now()]); // Force logout de toutes les sessions
     }
 
     /**

@@ -2,13 +2,23 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [develop, main]
   pull_request:
-    branches: [main, dev]
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    env:
+      JWT_SECRET: ci-test-secret-ci-test-secret-ci-test-secret-ci-test-secret
     defaults:
       run:
         working-directory: backend
@@ -22,6 +32,7 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, pdo_sqlite
+          coverage: pcov
           tools: composer
 
       - name: Cache Composer dependencies
@@ -59,7 +70,6 @@ jobs:
         run: npm ci
 
       - name: Lint frontend
-        continue-on-error: true
         run: npm run lint
 
       - name: Run frontend tests
@@ -68,33 +78,64 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-  security-audit:
+  sonarcloud:
+    if: ${{ vars.SONAR_CI_ENABLED == 'true' }}
     runs-on: ubuntu-latest
-    continue-on-error: true
+    needs: [backend-tests, frontend-quality]
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ORG: ${{ secrets.SONAR_ORG }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          tools: composer
-
-      - name: Composer audit
-        working-directory: backend
+      - name: Check SonarCloud secrets
+        id: sonar_ready
         run: |
-          composer install --no-interaction --prefer-dist
-          composer audit || true
+          if [[ -n "$SONAR_TOKEN" && -n "$SONAR_ORG" && -n "$SONAR_PROJECT_KEY" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "SonarCloud secrets missing; skipping Sonar scan and Quality Gate."
+          fi
+
+      - name: Checkout
+        if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
+        if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: NPM audit
-        working-directory: frontend
-        run: |
-          npm ci
-          npm audit --audit-level=high || true
+      - name: Setup Java
+        if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: SonarCloud Scan
+        if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
+        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703
+        with:
+          args: >
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ env.SONAR_ORG }}
+            -Dsonar.sources=backend/app,backend/routes,frontend/src
+            -Dsonar.tests=backend/tests,frontend/src
+            -Dsonar.test.inclusions=backend/tests/**/*.php,frontend/src/**/*.test.jsx
+            -Dsonar.exclusions=backend/vendor/**,frontend/node_modules/**,backend/storage/**,backend/bootstrap/cache/**,frontend/dist/**
+            -Dsonar.sourceEncoding=UTF-8
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - name: SonarCloud Quality Gate
+        if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
+        uses: SonarSource/sonarqube-quality-gate-action@d304d050d930b02a896b0f85935344f023928496
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}

@@ -21,7 +21,7 @@ export default function ArticleDetail() {
       } else {
         setError('Article non trouvé');
       }
-    } catch (err) {
+    } catch {
       setError('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
