@@ -23,7 +23,7 @@ trap cleanup EXIT
 export DB_CONNECTION=sqlite
 export DB_DATABASE="$SQLITE_DB"
 
-if ! php artisan migrate --database=sqlite --pretend --no-interaction > "$RAW_OUTPUT_FILE" 2>&1; then
+if ! php artisan migrate --database=sqlite --pretend --no-interaction --force > "$RAW_OUTPUT_FILE" 2>&1; then
   echo "Failed to generate migration SQL artifact." >&2
   cat "$RAW_OUTPUT_FILE" >&2
   exit 1
