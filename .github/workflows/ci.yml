@@ -18,7 +18,7 @@ jobs:
   backend-tests:
     runs-on: ubuntu-latest
     env:
-      JWT_SECRET: ci-test-secret
+      JWT_SECRET: ci-test-secret-ci-test-secret-ci-test-secret-ci-test-secret
     defaults:
       run:
         working-directory: backend

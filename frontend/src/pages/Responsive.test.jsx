@@ -27,7 +27,7 @@ describe('Frontend responsive structure', () => {
   test('login page keeps a constrained centered card on large screens and full width on mobile', () => {
     useAuth.mockReturnValue({ login: vi.fn() });
 
-    const { container } = render(
+    render(
       <MemoryRouter>
         <Login />
       </MemoryRouter>

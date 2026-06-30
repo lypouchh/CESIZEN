@@ -5,20 +5,24 @@ function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const { api } = useAuth();
 
-  const fetchUsers = async () => {
-    const res = await api.get('/admin/users');
-    const payload = Array.isArray(res.data) ? { users: res.data } : res.data;
-    setUsers(payload.users || []);
-  };
-
   const deleteUser = async (id) => {
     if (window.confirm("Supprimer cet utilisateur ?")) {
       await api.delete(`/admin/users/${id}`);
-      fetchUsers();
+      const res = await api.get('/admin/users');
+      const payload = Array.isArray(res.data) ? { users: res.data } : res.data;
+      setUsers(payload.users || []);
     }
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    const loadUsers = async () => {
+      const res = await api.get('/admin/users');
+      const payload = Array.isArray(res.data) ? { users: res.data } : res.data;
+      setUsers(payload.users || []);
+    };
+
+    void loadUsers();
+  }, [api]);
 
   return (
     <div>
