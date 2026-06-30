@@ -116,7 +116,7 @@ jobs:
 
       - name: SonarCloud Scan
         if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703
         with:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
@@ -132,7 +132,7 @@ jobs:
 
       - name: SonarCloud Quality Gate
         if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
-        uses: SonarSource/sonarqube-quality-gate-action@master
+        uses: SonarSource/sonarqube-quality-gate-action@d304d050d930b02a896b0f85935344f023928496
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
