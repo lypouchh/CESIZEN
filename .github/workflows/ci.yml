@@ -171,7 +171,7 @@ jobs:
   docker-image:
     runs-on: [self-hosted, linux]
     needs: [backend-tests, frontend-quality, migration-sql]
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && github.ref_name == 'main' }}
     env:
       DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
