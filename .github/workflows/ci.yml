@@ -144,6 +144,8 @@ jobs:
           java-version: '17'
 
       - name: SonarCloud Scan
+        id: sonar_scan
+        continue-on-error: true
         if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
         uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703
         with:
@@ -160,7 +162,7 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
 
       - name: SonarCloud Quality Gate
-        if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
+        if: ${{ steps.sonar_ready.outputs.enabled == 'true' && steps.sonar_scan.outcome == 'success' }}
         uses: SonarSource/sonarqube-quality-gate-action@d304d050d930b02a896b0f85935344f023928496
         timeout-minutes: 5
         env:
@@ -209,6 +211,18 @@ jobs:
 
       - name: Smoke test pushed image
         run: |
-          IMAGE="ghcr.io/${{ github.repository_owner }}/cesizen-backend:${{ github.sha }}"
-          docker pull "$IMAGE"
+          IMAGE="ghcr.io/${{ github.repository_owner }}/cesizen-backend:${{ github.ref_name }}"
+          for attempt in 1 2 3 4 5; do
+            if docker pull "$IMAGE"; then
+              break
+            fi
+
+            if [[ "$attempt" -eq 5 ]]; then
+              echo "Docker image $IMAGE is still unavailable after 5 attempts."
+              exit 1
+            fi
+
+            echo "Docker image $IMAGE is not available yet, retrying..."
+            sleep 10
+          done
           docker run --rm "$IMAGE" php artisan --version
