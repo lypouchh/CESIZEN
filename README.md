@@ -3,22 +3,23 @@
 Application web CESIZEN (backend Laravel + frontend Vite/React) avec un workflow GitFlow, une CI auto-hebergee et une separation explicite entre CI et CD.
 
 ![CI](https://github.com/lypouchh/CESIZEN/actions/workflows/ci.yml/badge.svg?branch=main)
-![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=SONAR_PROJECT_KEY&metric=alert_status)
+![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=lypouchh_CESIZEN&metric=alert_status)
 
-## Workflow Git
+## Organisation Git
 
 ### Strategie de branches
 - `main`: branche stable de production
 - `develop`: branche d'integration
-- `feature/*`: nouvelles fonctionnalites, creees depuis `develop`
+- `feature/ci-pipeline`: branche de travail principale pour la mise en place de la CI
+- `feature/*`: autres fonctionnalites, creees depuis `develop`
 - `hotfix/*`: corrections urgentes, creees depuis `main`
 
 ### Flux recommande
-1. Mettre a jour `develop`.
-2. Creer une branche `feature/...` depuis `develop`.
+1. Partir de `main` pour creer ou mettre a jour `develop`.
+2. Creer une branche `feature/...` pour une evolution ciblee.
 3. Commiter en Conventional Commits.
-4. Ouvrir une Pull Request vers `develop`.
-5. Merger `develop` vers `main` via PR de release.
+4. Ouvrir une Pull Request vers la branche cible.
+5. Fusionner uniquement via Pull Request apres revue et checks verts.
 
 Exemple:
 ```bash
@@ -64,6 +65,7 @@ Declencheurs:
 1. Ouvrir GitHub: Settings > Actions > Runners > New self-hosted runner.
 2. Choisir Linux x64 et executer les commandes fournies.
 3. Verifier que le runner est `Online` avant de lancer la CI.
+4. La CI de ce depot s'exécute sur la machine locale via ce runner auto-heberge.
 
 ## Migration SQL en CI (artefact)
 
@@ -86,6 +88,8 @@ Recuperation:
 2. Aller dans la section Artifacts.
 3. Telecharger `migration-sql-script`.
 
+Note importante: ce pipeline genere le script mais ne l'applique pas. L'application du script appartient au deploiement.
+
 ## Separation CI / CD
 
 ### CI (dans ce projet)
@@ -105,8 +109,8 @@ Fichier pipeline CD: `.github/workflows/cd.yml`
 Configuration recommandee sur `main` et `develop`:
 - interdire les push directs
 - exiger une PR approuvee
-- exiger les checks CI
-- exiger une Quality Gate verte
+- exiger les checks CI suivants: `CI/backend-tests (pull_request)`, `CI/frontend-quality (pull_request)`, `CI/migration-sql (pull_request)`, `SonarCloud Code Analysis`
+- exiger une Quality Gate verte via SonarCloud
 
 ## Authentification API (JWT)
 
@@ -122,6 +126,10 @@ Variables principales:
 
 ## Lancement avec Docker
 
+### Image publiee
+- Registre: `ghcr.io/lypouchh/cesizen-backend`
+- Tags publies: `latest` sur `main`, tag de branche et tag SHA sur les pushes CI
+
 Prerequis:
 - Docker Desktop (ou Docker Engine + Compose)
 - Git
@@ -132,6 +140,16 @@ chmod +x docker-init.sh
 ./docker-init.sh
 ```
 
+Execution standardisee avec Docker Compose:
+```bash
+docker compose up -d --build
+```
+
+Execution de l'environnement de production avec l'image distante:
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
 Commandes utiles:
 ```bash
 docker-compose ps
@@ -139,5 +157,14 @@ docker-compose logs -f
 docker-compose down
 docker-compose exec laravel php artisan test
 ```
+
+Conditions d'execution du pipeline Docker:
+- runner local self-hosted
+- secret GitHub natif pour publier dans GHCR (`GITHUB_TOKEN` avec permission `packages: write`)
+- execution sur `push` vers `main` / `develop` et via `workflow_dispatch`
+- verification apres build par un smoke test sur l'image poussee
+
+Badge pipeline Docker:
+![Docker CI](https://github.com/lypouchh/CESIZEN/actions/workflows/ci.yml/badge.svg?branch=main)
 
 Pour la documentation Docker detaillee, voir `DOCKER_SETUP.md`.
