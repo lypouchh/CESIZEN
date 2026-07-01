@@ -162,7 +162,7 @@ docker-compose exec laravel php artisan test
 Conditions d'execution du pipeline Docker:
 - runner local self-hosted
 - secret GitHub natif pour publier dans GHCR (`GITHUB_TOKEN` avec permission `packages: write`)
-- execution sur `push` vers `main` / `develop` et via `workflow_dispatch`
+- execution sur `push` vers `main` et via `workflow_dispatch`
 - verification apres build par un smoke test sur l'image poussee
 
 Badge pipeline Docker:
