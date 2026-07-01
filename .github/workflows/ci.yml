@@ -233,3 +233,29 @@ jobs:
             sleep 10
           done
           docker run --rm "$IMAGE" php artisan --version
+
+  deploy-local:
+    runs-on: [self-hosted, linux]
+    needs: [docker-image]
+    if: ${{ github.event_name != 'pull_request' && github.ref_name == 'main' }}
+    env:
+      DB_DATABASE: cesizen
+      DB_USERNAME: cesizen_user
+      DB_PASSWORD: password
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download migration artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: migration-sql-script
+          path: backend/artifacts
+
+      - name: Deploy local stack
+        run: |
+          bash scripts/local-deploy.sh
