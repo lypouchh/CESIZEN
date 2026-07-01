@@ -104,6 +104,24 @@ Fichier pipeline CD: `.github/workflows/cd.yml`
 - declenchement manuel (`workflow_dispatch`) ou sur tag `v*`
 - rappel explicite: le SQL de migration est produit par la CI mais son application est une operation de deploiement controlee, jamais automatique sur une PR
 
+## Deploiement local automatise
+
+Le deploiement local est automatise dans le pipeline CI sur `main` apres le build et le push de l'image Docker.
+Le stage utilise le script `scripts/local-deploy.sh`.
+
+Ordre des operations:
+1. arreter la stack existante avec `docker compose down`
+2. demarrer uniquement MySQL
+3. appliquer automatiquement le script SQL genere en CI et publie en artefact (`backend/artifacts/migration.sql`)
+4. tirer la nouvelle image depuis GHCR
+5. relancer l'application sans intervention manuelle
+
+Le script SQL applique ici vient de l'artefact du TP2/CI. Il est rejouable et n'effectue pas de suppression/recreation de la base: le deploiement applique les migrations avant la remise en ligne applicative pour eviter d'exposer une version a un schema obsolet.
+
+Condition d'activation:
+- execution automatique uniquement sur `push` vers `main`
+- non execute sur les `pull_request`
+
 ## Protection des branches (GitHub)
 
 Configuration recommandee:
