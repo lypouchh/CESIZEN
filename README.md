@@ -106,11 +106,12 @@ Fichier pipeline CD: `.github/workflows/cd.yml`
 
 ## Protection des branches (GitHub)
 
-Configuration recommandee sur `main` et `develop`:
+Configuration recommandee:
 - interdire les push directs
 - exiger une PR approuvee
-- exiger les checks CI suivants: `CI/backend-tests (pull_request)`, `CI/frontend-quality (pull_request)`, `CI/migration-sql (pull_request)`, `SonarCloud Code Analysis`
-- exiger une Quality Gate verte via SonarCloud
+- sur `develop`: exiger `CI/backend-tests (pull_request)`, `CI/frontend-quality (pull_request)`, `CI/migration-sql (pull_request)`
+- sur `main`: exiger les memes checks CI + `SonarCloud Code Analysis`
+- sur `main`: exiger une Quality Gate verte via SonarCloud
 
 ## Authentification API (JWT)
 
@@ -161,7 +162,7 @@ docker-compose exec laravel php artisan test
 Conditions d'execution du pipeline Docker:
 - runner local self-hosted
 - secret GitHub natif pour publier dans GHCR (`GITHUB_TOKEN` avec permission `packages: write`)
-- execution sur `push` vers `main` / `develop` et via `workflow_dispatch`
+- execution sur `push` vers `main` et via `workflow_dispatch`
 - verification apres build par un smoke test sur l'image poussee
 
 Badge pipeline Docker:
