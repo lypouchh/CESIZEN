@@ -173,7 +173,7 @@ jobs:
     needs: [backend-tests, frontend-quality, migration-sql]
     if: ${{ github.event_name != 'pull_request' }}
     env:
-      DOCKER_CONFIG: ${{ runner.temp }}/.docker
+      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       contents: read
       packages: write
