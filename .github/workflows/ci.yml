@@ -172,6 +172,8 @@ jobs:
     runs-on: [self-hosted, linux]
     needs: [backend-tests, frontend-quality, migration-sql]
     if: ${{ github.event_name != 'pull_request' }}
+    env:
+      DOCKER_CONFIG: ${{ runner.temp }}/.docker
     permissions:
       contents: read
       packages: write
@@ -179,6 +181,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Prepare isolated Docker config
+        run: |
+          mkdir -p "$DOCKER_CONFIG"
+          printf '{"auths":{}}\n' > "$DOCKER_CONFIG/config.json"
 
       - name: Log in to GHCR
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
