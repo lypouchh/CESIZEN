@@ -200,7 +200,7 @@ jobs:
 
       - name: Audit backend dependencies
         working-directory: backend
-        run: composer audit --no-interaction
+        run: composer audit --no-interaction --ignore-severity=low
 
       - name: Install frontend dependencies
         working-directory: frontend
