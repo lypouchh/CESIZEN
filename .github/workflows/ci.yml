@@ -7,9 +7,6 @@ on:
     branches: [develop, main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -18,6 +15,8 @@ jobs:
   backend-tests:
     runs-on: [self-hosted, linux]
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      contents: read
     env:
       JWT_SECRET: ci-test-secret-ci-test-secret-ci-test-secret-ci-test-secret
     defaults:
@@ -48,6 +47,8 @@ jobs:
   frontend-quality:
     runs-on: [self-hosted, linux]
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: frontend
@@ -78,6 +79,8 @@ jobs:
   migration-sql:
     runs-on: [self-hosted, linux]
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      contents: read
     needs: [backend-tests, frontend-quality]
     env:
       JWT_SECRET: ci-test-secret-ci-test-secret-ci-test-secret-ci-test-secret
@@ -111,6 +114,8 @@ jobs:
     runs-on: [self-hosted, linux]
     needs: [backend-tests, frontend-quality]
     if: ${{ github.event_name != 'pull_request' && github.ref_name == 'main' }}
+    permissions:
+      contents: read
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_ORG: ${{ secrets.SONAR_ORG }}
@@ -175,6 +180,8 @@ jobs:
     runs-on: [self-hosted, linux]
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     needs: [backend-tests, frontend-quality]
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -279,7 +286,7 @@ jobs:
 
     steps:
       - name: Scan backend image with Trivy
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8
         with:
           image-ref: ghcr.io/${{ github.repository_owner }}/cesizen-backend:latest
           format: table

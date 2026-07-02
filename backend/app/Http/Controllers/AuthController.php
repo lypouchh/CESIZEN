@@ -4,18 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\RefreshToken;
 use App\Models\User;
+use App\Services\AuthTokenService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly AuthTokenService $authTokenService)
+    {
+    }
+
     public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
@@ -27,7 +31,7 @@ class AuthController extends Controller
         ];
 
         if ($user) {
-            $token = Str::random(60);
+            $token = $this->authTokenService->generatePasswordResetToken();
 
             DB::table('password_reset_tokens')->updateOrInsert(
                 ['email' => $request->email],
@@ -38,9 +42,8 @@ class AuthController extends Controller
                 ]
             );
 
-            // En local uniquement, on expose le lien pour faciliter les tests manuels.
             if (app()->environment('local')) {
-                $response['debug_url'] = "http://localhost:5173/reset-password/$token?email=" . urlencode($user->email);
+                $response['debug_url'] = 'http://localhost:5173/reset-password/' . $token . '?email=' . urlencode($user->email);
             }
 
             $this->logSecurityEvent('password_reset_requested', $request, [
@@ -94,9 +97,7 @@ class AuthController extends Controller
         $user->passwordHash = Hash::make($request->password);
         $user->save();
 
-        // Force la reconnexion de toutes les sessions existantes.
-        $this->revokeAllRefreshTokensForUser($user->id);
-
+        $this->authTokenService->revokeAllRefreshTokensForUser($user->id);
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         $this->logSecurityEvent('password_reset_success', $request, [
@@ -115,7 +116,6 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        // On vérifie que l'ancien mot de passe est correct
         if (!Hash::check($request->current_password, $user->passwordHash)) {
             $this->logSecurityEvent('password_change_failed', $request, [
                 'user_id' => $user->id,
@@ -126,7 +126,7 @@ class AuthController extends Controller
 
         $user->passwordHash = Hash::make($request->new_password);
         $user->save();
-        $this->revokeAllRefreshTokensForUser($user->id);
+        $this->authTokenService->revokeAllRefreshTokensForUser($user->id);
 
         $this->logSecurityEvent('password_change_success', $request, [
             'user_id' => $user->id,
@@ -149,12 +149,12 @@ class AuthController extends Controller
             'lastname' => $request->lastname,
             'email' => $request->email,
             'passwordHash' => Hash::make($request->password),
-            'id_role' => 2, // Rôle Utilisateur standard
+            'id_role' => 2,
             'isActive' => true,
             'isSuperAdmin' => false,
         ]);
 
-        $tokenData = $this->issueTokenPair($user, $request);
+        $tokenData = $this->authTokenService->issueTokenPair($user, $request);
 
         return response()->json([
             'message' => 'Compte créé avec succès.',
@@ -163,7 +163,7 @@ class AuthController extends Controller
             'access_token' => $tokenData['access_token'],
             'token_type' => 'Bearer',
             'expires_in' => $tokenData['expires_in'],
-        ], 201)->cookie($this->buildRefreshCookie($tokenData['refresh_token']));
+        ], 201)->cookie($this->authTokenService->buildRefreshCookie($tokenData['refresh_token']));
     }
 
     public function registerAdmin(Request $request)
@@ -173,7 +173,7 @@ class AuthController extends Controller
             'lastname' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'password' => ['required', ...$this->passwordRules()],
-            'secret_code' => 'required'
+            'secret_code' => 'required',
         ]);
 
         if ($request->secret_code !== env('ADMIN_REGISTRATION_CODE')) {
@@ -183,12 +183,12 @@ class AuthController extends Controller
             return response()->json(['message' => 'Code secret invalide.'], 403);
         }
 
-        $user = User::create([
+        User::create([
             'firstname' => $request->firstname,
             'lastname' => $request->lastname,
             'email' => $request->email,
             'passwordHash' => Hash::make($request->password),
-            'id_role' => 1, // Rôle Admin
+            'id_role' => 1,
             'isActive' => true,
             'isSuperAdmin' => false,
         ]);
@@ -284,7 +284,7 @@ class AuthController extends Controller
     public function destroyAccount(Request $request)
     {
         $user = $request->user();
-        $this->revokeAllRefreshTokensForUser($user->id);
+        $this->authTokenService->revokeAllRefreshTokensForUser($user->id);
         $user->delete();
 
         return response()->json(['message' => 'Compte supprimé.']);
@@ -384,7 +384,6 @@ class AuthController extends Controller
         return response()->json(['message' => 'Utilisateur supprimé.']);
     }
 
-    // Connexion
     public function login(Request $request)
     {
         $request->validate([
@@ -399,7 +398,7 @@ class AuthController extends Controller
                 'reason' => 'invalid_credentials',
             ]);
             return response()->json([
-                'message' => 'Les identifiants sont incorrects.'
+                'message' => 'Les identifiants sont incorrects.',
             ], 401);
         }
 
@@ -409,11 +408,11 @@ class AuthController extends Controller
                 'user_id' => $user->id,
             ]);
             return response()->json([
-                'message' => 'Votre compte est désactivé. Contactez un administrateur.'
+                'message' => 'Votre compte est désactivé. Contactez un administrateur.',
             ], 403);
         }
 
-        $tokenData = $this->issueTokenPair($user, $request);
+        $tokenData = $this->authTokenService->issueTokenPair($user, $request);
 
         $this->logSecurityEvent('login_success', $request, [
             'user_id' => $user->id,
@@ -425,12 +424,12 @@ class AuthController extends Controller
             'access_token' => $tokenData['access_token'],
             'token_type' => 'Bearer',
             'expires_in' => $tokenData['expires_in'],
-        ])->cookie($this->buildRefreshCookie($tokenData['refresh_token']));
+        ])->cookie($this->authTokenService->buildRefreshCookie($tokenData['refresh_token']));
     }
 
     public function refresh(Request $request)
     {
-        $refreshToken = $this->extractRefreshToken($request);
+        $refreshToken = $this->authTokenService->extractRefreshToken($request);
         if (!$refreshToken) {
             return response()->json(['message' => 'Refresh token manquant.'], 401);
         }
@@ -458,7 +457,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Utilisateur invalide ou desactive.'], 401);
         }
 
-        $newTokenData = $this->issueTokenPair($user, $request);
+        $newTokenData = $this->authTokenService->issueTokenPair($user, $request);
         $storedToken->update([
             'revoked_at' => now(),
             'replaced_by_token_hash' => hash('sha256', $newTokenData['refresh_token']),
@@ -472,13 +471,12 @@ class AuthController extends Controller
             'access_token' => $newTokenData['access_token'],
             'token_type' => 'Bearer',
             'expires_in' => $newTokenData['expires_in'],
-        ])->cookie($this->buildRefreshCookie($newTokenData['refresh_token']));
+        ])->cookie($this->authTokenService->buildRefreshCookie($newTokenData['refresh_token']));
     }
 
-    // Déconnexion
     public function logout(Request $request)
     {
-        $refreshToken = $this->extractRefreshToken($request);
+        $refreshToken = $this->authTokenService->extractRefreshToken($request);
 
         if ($refreshToken) {
             $hashed = hash('sha256', $refreshToken);
@@ -501,95 +499,12 @@ class AuthController extends Controller
         }
 
         return response()->json(['message' => 'Déconnexion réussie'])
-            ->cookie($this->clearRefreshCookie());
+            ->cookie($this->authTokenService->clearRefreshCookie());
     }
 
-    // Récupérer l'utilisateur connecté
     public function user(Request $request)
     {
         return $request->user()->load('role');
-    }
-
-    private function issueTokenPair(User $user, Request $request): array
-    {
-        $ttlMinutes = (int) config('jwt.ttl', 15);
-        $accessToken = auth('api')->setTTL($ttlMinutes)->fromUser($user);
-
-        $plainRefreshToken = Str::random(96);
-        $refreshTtlMinutes = (int) env('JWT_REFRESH_TOKEN_TTL', 10080);
-
-        RefreshToken::create([
-            'user_id' => $user->id,
-            'token_hash' => hash('sha256', $plainRefreshToken),
-            'expires_at' => now()->addMinutes($refreshTtlMinutes),
-            'ip_address' => $request->ip(),
-            'user_agent' => Str::limit((string) $request->userAgent(), 255, ''),
-        ]);
-
-        return [
-            'access_token' => $accessToken,
-            'refresh_token' => $plainRefreshToken,
-            'expires_in' => $ttlMinutes * 60,
-        ];
-    }
-
-    private function revokeAllRefreshTokensForUser(int $userId): void
-    {
-        RefreshToken::where('user_id', $userId)
-            ->whereNull('revoked_at')
-            ->update(['revoked_at' => now()]);
-    }
-
-    private function extractRefreshToken(Request $request): ?string
-    {
-        $fromBody = $request->input('refresh_token');
-        if (is_string($fromBody) && $fromBody !== '') {
-            return $fromBody;
-        }
-
-        $cookieName = (string) env('JWT_REFRESH_COOKIE_NAME', 'refresh_token');
-        $fromCookie = $request->cookie($cookieName);
-
-        return is_string($fromCookie) && $fromCookie !== '' ? $fromCookie : null;
-    }
-
-    private function buildRefreshCookie(string $refreshToken): \Symfony\Component\HttpFoundation\Cookie
-    {
-        $cookieName = (string) env('JWT_REFRESH_COOKIE_NAME', 'refresh_token');
-        $cookieMinutes = (int) env('JWT_REFRESH_TOKEN_TTL', 10080);
-        $secure = app()->environment('production');
-        $sameSite = $secure ? 'none' : 'lax';
-
-        return cookie(
-            $cookieName,
-            $refreshToken,
-            $cookieMinutes,
-            '/',
-            null,
-            $secure,
-            true,
-            false,
-            $sameSite,
-        );
-    }
-
-    private function clearRefreshCookie(): \Symfony\Component\HttpFoundation\Cookie
-    {
-        $cookieName = (string) env('JWT_REFRESH_COOKIE_NAME', 'refresh_token');
-        $secure = app()->environment('production');
-        $sameSite = $secure ? 'none' : 'lax';
-
-        return cookie(
-            $cookieName,
-            '',
-            -1,
-            '/',
-            null,
-            $secure,
-            true,
-            false,
-            $sameSite,
-        );
     }
 
     /**
