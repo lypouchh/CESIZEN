@@ -15,16 +15,7 @@ class Cors
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedOrigins = [
-            'http://localhost:5173',
-            'http://127.0.0.1:5173',
-            'http://localhost:3000',
-            'http://127.0.0.1:3000',
-        ];
-
-        if (app()->environment('production')) {
-            $allowedOrigins = array_filter(explode(',', env('CORS_ALLOWED_ORIGINS', '')));
-        }
+        $allowedOrigins = $this->resolveAllowedOrigins();
 
         $origin = $request->headers->get('origin');
         $originAllowed = $origin && in_array($origin, $allowedOrigins, true);
@@ -37,11 +28,10 @@ class Cors
 
             if ($originAllowed) {
                 $preflight->header('Access-Control-Allow-Origin', $origin)
-                    ->header('Access-Control-Allow-Credentials', 'true')
-                    ->header('Vary', 'Origin');
-            } elseif (!app()->environment('production')) {
-                $preflight->header('Access-Control-Allow-Origin', '*');
+                    ->header('Access-Control-Allow-Credentials', 'true');
             }
+
+            $preflight->header('Vary', 'Origin');
 
             return $preflight;
         }
@@ -54,12 +44,36 @@ class Cors
                 ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
                 ->header('Access-Control-Allow-Credentials', 'true')
                 ->header('Vary', 'Origin');
-        } elseif (!app()->environment('production')) {
-            $response->header('Access-Control-Allow-Origin', '*')
-                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+        } else {
+            $response->header('Vary', 'Origin');
         }
 
         return $response;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function resolveAllowedOrigins(): array
+    {
+        $originsFromEnv = array_filter(array_map(
+            static fn (string $origin) => trim($origin),
+            explode(',', (string) env('CORS_ALLOWED_ORIGINS', ''))
+        ));
+
+        if (!empty($originsFromEnv)) {
+            return array_values(array_unique($originsFromEnv));
+        }
+
+        if (!app()->environment('production')) {
+            return [
+                'http://localhost:5173',
+                'http://127.0.0.1:5173',
+                'http://localhost:3000',
+                'http://127.0.0.1:3000',
+            ];
+        }
+
+        return [];
     }
 }

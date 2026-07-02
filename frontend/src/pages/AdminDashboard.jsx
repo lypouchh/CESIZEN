@@ -5,9 +5,20 @@ function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const { api } = useAuth();
 
+  const normalizeUserId = (id) => {
+    const parsedId = Number(id);
+
+    if (!Number.isInteger(parsedId) || parsedId <= 0) {
+      throw new Error('Identifiant utilisateur invalide.');
+    }
+
+    return encodeURIComponent(String(parsedId));
+  };
+
   const deleteUser = async (id) => {
     if (window.confirm("Supprimer cet utilisateur ?")) {
-      await api.delete(`/admin/users/${id}`);
+      const safeUserId = normalizeUserId(id);
+      await api.delete(`/admin/users/${safeUserId}`);
       const res = await api.get('/admin/users');
       const payload = Array.isArray(res.data) ? { users: res.data } : res.data;
       setUsers(payload.users || []);
