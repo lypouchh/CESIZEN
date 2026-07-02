@@ -1,0 +1,73 @@
+services:
+  app-blue:
+    image: ghcr.io/lypouchh/cesizen-backend:latest
+    container_name: cesizen-app-blue
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=${APP_URL:-http://localhost}
+      - APP_COLOR=blue
+      - SESSION_SECURE_COOKIE=true
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost}
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-cesizen}
+      - DB_USERNAME=${DB_USERNAME:-cesizen_user}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+    expose:
+      - 8000
+    networks:
+      - cesizen-network-prod
+    security_opt:
+      - no-new-privileges:true
+
+  app-green:
+    image: ghcr.io/lypouchh/cesizen-backend:latest
+    container_name: cesizen-app-green
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=${APP_URL:-http://localhost}
+      - APP_COLOR=green
+      - SESSION_SECURE_COOKIE=true
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost}
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-cesizen}
+      - DB_USERNAME=${DB_USERNAME:-cesizen_user}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+    expose:
+      - 8000
+    networks:
+      - cesizen-network-prod
+    security_opt:
+      - no-new-privileges:true
+
+  proxy:
+    image: nginx:alpine
+    container_name: cesizen-bluegreen-proxy
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend/docker/nginx/bluegreen:/etc/nginx/conf.d:ro
+    networks:
+      - cesizen-network-prod
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  cesizen-network-prod:
+    driver: bridge

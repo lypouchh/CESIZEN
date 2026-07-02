@@ -1,18 +1,28 @@
-name: Bug report
-about: Signaler une anomalie de production ou recette
-title: "[BUG] "
-labels: ["bug", "triage"]
-description: Créer un ticket d'anomalie exploitable par l'équipe.
+name: Incident
+about: Declarer un incident securite ou disponibilite
+title: "[INCIDENT] "
+labels: ["bug", "securite", "priorite:critique"]
+description: Ticket incident avec severite et objectif SLA.
 body:
   - type: dropdown
     id: severity
     attributes:
-      label: Criticite
+      label: Severite
       options:
-        - Critique (service indisponible)
-        - Haute (fonction majeure bloquee)
-        - Moyenne
-        - Faible
+        - S1 - Critique
+        - S2 - Forte
+        - S3 - Mineure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sla
+    attributes:
+      label: SLA cible
+      options:
+        - S1 - prise en charge immediate (moins de 1h)
+        - S2 - prise en charge dans la journee
+        - S3 - prise en charge sous 72h
     validations:
       required: true
 
@@ -55,3 +65,9 @@ body:
     attributes:
       label: Logs, captures, contexte
       description: Ajouter les preuves utiles (logs, stacktrace, capture ecran).
+
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Correctif / mitigation propose
+      description: Decrire le plan de contournement puis le correctif permanent.
