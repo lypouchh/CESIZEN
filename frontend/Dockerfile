@@ -6,7 +6,11 @@ COPY package*.json ./
 
 RUN npm ci && npm cache clean --force
 
-COPY . .
+COPY index.html ./
+COPY vite.config.js ./
+COPY eslint.config.js ./
+COPY public ./public
+COPY src ./src
 
 RUN chown -R node:node /app
 
