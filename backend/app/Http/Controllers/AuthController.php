@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class AuthController extends Controller
@@ -40,6 +42,10 @@ class AuthController extends Controller
             if (app()->environment('local')) {
                 $response['debug_url'] = "http://localhost:5173/reset-password/$token?email=" . urlencode($user->email);
             }
+
+            $this->logSecurityEvent('password_reset_requested', $request, [
+                'user_id' => $user->id,
+            ]);
         }
 
         return response()->json($response);
@@ -50,26 +56,38 @@ class AuthController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', 'confirmed', ...$this->passwordRules()],
         ]);
 
         $resetRecord = DB::table('password_reset_tokens')->where('email', $request->email)->first();
         if (!$resetRecord) {
+            $this->logSecurityEvent('password_reset_failed', $request, [
+                'reason' => 'missing_reset_record',
+            ]);
             return response()->json(['message' => 'Lien de réinitialisation invalide ou expiré.'], 400);
         }
 
         $createdAt = Carbon::parse($resetRecord->created_at);
         if ($createdAt->diffInMinutes(now()) > 60) {
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            $this->logSecurityEvent('password_reset_failed', $request, [
+                'reason' => 'expired_token',
+            ]);
             return response()->json(['message' => 'Lien de réinitialisation invalide ou expiré.'], 400);
         }
 
         if (!Hash::check($request->token, $resetRecord->token)) {
+            $this->logSecurityEvent('password_reset_failed', $request, [
+                'reason' => 'invalid_token',
+            ]);
             return response()->json(['message' => 'Lien de réinitialisation invalide ou expiré.'], 400);
         }
 
         $user = User::where('email', $request->email)->first();
         if (!$user) {
+            $this->logSecurityEvent('password_reset_failed', $request, [
+                'reason' => 'missing_user',
+            ]);
             return response()->json(['message' => 'Utilisateur non trouvé.'], 404);
         }
 
@@ -81,6 +99,10 @@ class AuthController extends Controller
 
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
+        $this->logSecurityEvent('password_reset_success', $request, [
+            'user_id' => $user->id,
+        ]);
+
         return response()->json(['message' => 'Mot de passe mis à jour.']);
     }
 
@@ -88,19 +110,27 @@ class AuthController extends Controller
     {
         $request->validate([
             'current_password' => 'required',
-            'new_password' => 'required|min:8|confirmed',
+            'new_password' => ['required', 'confirmed', ...$this->passwordRules()],
         ]);
 
         $user = $request->user();
 
         // On vérifie que l'ancien mot de passe est correct
         if (!Hash::check($request->current_password, $user->passwordHash)) {
+            $this->logSecurityEvent('password_change_failed', $request, [
+                'user_id' => $user->id,
+                'reason' => 'invalid_current_password',
+            ]);
             return response()->json(['message' => 'Le mot de passe actuel est incorrect.'], 422);
         }
 
         $user->passwordHash = Hash::make($request->new_password);
         $user->save();
         $this->revokeAllRefreshTokensForUser($user->id);
+
+        $this->logSecurityEvent('password_change_success', $request, [
+            'user_id' => $user->id,
+        ]);
 
         return response()->json(['message' => 'Mot de passe modifié avec succès.']);
     }
@@ -111,7 +141,7 @@ class AuthController extends Controller
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', 'confirmed', ...$this->passwordRules()],
         ]);
 
         $user = User::create([
@@ -142,11 +172,14 @@ class AuthController extends Controller
             'firstname' => 'required|string',
             'lastname' => 'required|string',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8',
+            'password' => ['required', ...$this->passwordRules()],
             'secret_code' => 'required'
         ]);
 
         if ($request->secret_code !== env('ADMIN_REGISTRATION_CODE')) {
+            $this->logSecurityEvent('admin_registration_failed', $request, [
+                'reason' => 'invalid_secret_code',
+            ]);
             return response()->json(['message' => 'Code secret invalide.'], 403);
         }
 
@@ -168,6 +201,10 @@ class AuthController extends Controller
         $current = $request->user();
 
         if (!$current->isSuperAdmin()) {
+            $this->logSecurityEvent('admin_action_denied', $request, [
+                'action' => 'create_sub_admin',
+                'actor_user_id' => $current?->id,
+            ]);
             return response()->json(['message' => 'Action réservée au super admin.'], 403);
         }
 
@@ -175,7 +212,7 @@ class AuthController extends Controller
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', 'confirmed', ...$this->passwordRules()],
         ]);
 
         $admin = User::create([
@@ -186,6 +223,12 @@ class AuthController extends Controller
             'id_role' => 1,
             'isActive' => true,
             'isSuperAdmin' => false,
+        ]);
+
+        $this->logSecurityEvent('admin_action_success', $request, [
+            'action' => 'create_sub_admin',
+            'actor_user_id' => $current->id,
+            'target_user_id' => $admin->id,
         ]);
 
         return response()->json([
@@ -253,19 +296,44 @@ class AuthController extends Controller
         $user = User::findOrFail($id);
 
         if ($user->id === $current->id) {
+            $this->logSecurityEvent('admin_action_denied', request(), [
+                'action' => 'toggle_user_status',
+                'reason' => 'self_target',
+                'actor_user_id' => $current->id,
+                'target_user_id' => $user->id,
+            ]);
             return response()->json(['message' => 'Impossible de modifier votre propre statut.'], 403);
         }
 
         if ($user->isSuperAdmin()) {
+            $this->logSecurityEvent('admin_action_denied', request(), [
+                'action' => 'toggle_user_status',
+                'reason' => 'super_admin_target',
+                'actor_user_id' => $current->id,
+                'target_user_id' => $user->id,
+            ]);
             return response()->json(['message' => 'Impossible de modifier le super admin.'], 403);
         }
 
         if (!$current->isSuperAdmin() && $user->id_role === 1) {
+            $this->logSecurityEvent('admin_action_denied', request(), [
+                'action' => 'toggle_user_status',
+                'reason' => 'insufficient_role',
+                'actor_user_id' => $current->id,
+                'target_user_id' => $user->id,
+            ]);
             return response()->json(['message' => 'Seul le super admin peut gérer les autres admins.'], 403);
         }
 
         $user->isActive = !$user->isActive;
         $user->save();
+
+        $this->logSecurityEvent('admin_action_success', request(), [
+            'action' => 'toggle_user_status',
+            'actor_user_id' => $current->id,
+            'target_user_id' => $user->id,
+            'is_active' => $user->isActive,
+        ]);
 
         return response()->json($user);
     }
@@ -276,18 +344,43 @@ class AuthController extends Controller
         $user = User::findOrFail($id);
 
         if ($user->id === $current->id) {
+            $this->logSecurityEvent('admin_action_denied', $request, [
+                'action' => 'delete_user',
+                'reason' => 'self_target',
+                'actor_user_id' => $current->id,
+                'target_user_id' => $user->id,
+            ]);
             return response()->json(['message' => 'Impossible de supprimer votre propre compte ici.'], 403);
         }
 
         if ($user->isSuperAdmin()) {
+            $this->logSecurityEvent('admin_action_denied', $request, [
+                'action' => 'delete_user',
+                'reason' => 'super_admin_target',
+                'actor_user_id' => $current->id,
+                'target_user_id' => $user->id,
+            ]);
             return response()->json(['message' => 'Impossible de supprimer le super admin.'], 403);
         }
 
         if (!$current->isSuperAdmin() && $user->id_role === 1) {
+            $this->logSecurityEvent('admin_action_denied', $request, [
+                'action' => 'delete_user',
+                'reason' => 'insufficient_role',
+                'actor_user_id' => $current->id,
+                'target_user_id' => $user->id,
+            ]);
             return response()->json(['message' => 'Seul le super admin peut supprimer les autres admins.'], 403);
         }
 
         $user->delete();
+
+        $this->logSecurityEvent('admin_action_success', $request, [
+            'action' => 'delete_user',
+            'actor_user_id' => $current->id,
+            'target_user_id' => $user->id,
+        ]);
+
         return response()->json(['message' => 'Utilisateur supprimé.']);
     }
 
@@ -302,18 +395,29 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->passwordHash)) {
+            $this->logSecurityEvent('login_failed', $request, [
+                'reason' => 'invalid_credentials',
+            ]);
             return response()->json([
                 'message' => 'Les identifiants sont incorrects.'
             ], 401);
         }
 
         if (!$user->isActive) {
+            $this->logSecurityEvent('login_failed', $request, [
+                'reason' => 'inactive_account',
+                'user_id' => $user->id,
+            ]);
             return response()->json([
                 'message' => 'Votre compte est désactivé. Contactez un administrateur.'
             ], 403);
         }
 
         $tokenData = $this->issueTokenPair($user, $request);
+
+        $this->logSecurityEvent('login_success', $request, [
+            'user_id' => $user->id,
+        ]);
 
         return response()->json([
             'user' => $user,
@@ -339,11 +443,18 @@ class AuthController extends Controller
             ->first();
 
         if (!$storedToken) {
+            $this->logSecurityEvent('refresh_failed', $request, [
+                'reason' => 'invalid_or_expired_refresh_token',
+            ]);
             return response()->json(['message' => 'Refresh token invalide ou expire.'], 401);
         }
 
         $user = User::find($storedToken->user_id);
         if (!$user || !$user->isActive) {
+            $this->logSecurityEvent('refresh_failed', $request, [
+                'reason' => 'inactive_or_missing_user',
+                'user_id' => $storedToken->user_id,
+            ]);
             return response()->json(['message' => 'Utilisateur invalide ou desactive.'], 401);
         }
 
@@ -351,6 +462,10 @@ class AuthController extends Controller
         $storedToken->update([
             'revoked_at' => now(),
             'replaced_by_token_hash' => hash('sha256', $newTokenData['refresh_token']),
+        ]);
+
+        $this->logSecurityEvent('refresh_success', $request, [
+            'user_id' => $user->id,
         ]);
 
         return response()->json([
@@ -372,6 +487,10 @@ class AuthController extends Controller
                 ->whereNull('revoked_at')
                 ->update(['revoked_at' => now()]);
         }
+
+        $this->logSecurityEvent('logout', $request, [
+            'user_id' => $request->user()?->id,
+        ]);
 
         try {
             if (auth('api')->getToken()) {
@@ -471,5 +590,31 @@ class AuthController extends Controller
             false,
             $sameSite,
         );
+    }
+
+    /**
+     * @return array<int, \Illuminate\Validation\Rules\Password>
+     */
+    private function passwordRules(): array
+    {
+        $rule = Password::min(app()->environment('production') ? 12 : 8)
+            ->letters()
+            ->numbers();
+
+        if (app()->environment('production')) {
+            $rule = $rule->mixedCase()->symbols();
+        }
+
+        return [$rule];
+    }
+
+    private function logSecurityEvent(string $event, Request $request, array $context = []): void
+    {
+        Log::channel('security')->info($event, array_merge($context, [
+            'ip' => $request->ip(),
+            'email' => strtolower((string) $request->input('email', '')),
+            'path' => $request->path(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
+        ]));
     }
 }
