@@ -1,8 +1,8 @@
-name: Feature request
-about: Proposer une evolution fonctionnelle ou technique
-title: "[FEATURE] "
-labels: ["enhancement", "triage"]
-description: Formaliser une demande d'evolution.
+name: Demande d'evolution
+about: Proposer une evolution fonctionnelle, technique ou dette technique
+title: "[EVOLUTION] "
+labels: ["evolution", "priorite:forte"]
+description: Ticket d'evolution avec delai et cout estimes.
 body:
   - type: input
     id: module
@@ -43,8 +43,27 @@ body:
     attributes:
       label: Priorite
       options:
-        - P1
-        - P2
-        - P3
+        - priorite:critique
+        - priorite:forte
+        - priorite:mineure
+    validations:
+      required: true
+
+  - type: input
+    id: deadline
+    attributes:
+      label: Delai souhaite
+      placeholder: Ex. 2 sprints / avant le 31-07-2026
+    validations:
+      required: true
+
+  - type: dropdown
+    id: cost
+    attributes:
+      label: Cout estime
+      options:
+        - faible (moins de 1 jour)
+        - moyen (1 a 3 jours)
+        - eleve (plus de 3 jours)
     validations:
       required: true

@@ -1,12 +1,16 @@
-FROM node:20-alpine
+FROM node:20.19.3-alpine3.20
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci && npm cache clean --force
 
 COPY . .
+
+RUN chown -R node:node /app
+
+USER node
 
 EXPOSE 5173
 
