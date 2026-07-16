@@ -155,7 +155,7 @@ jobs:
         id: sonar_scan
         continue-on-error: true
         if: ${{ steps.sonar_ready.outputs.enabled == 'true' }}
-        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703
+        uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e
         with:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
