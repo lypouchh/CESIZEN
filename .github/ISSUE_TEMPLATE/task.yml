@@ -1,0 +1,30 @@
+name: Créer une tâche technique
+description: Préparer une tâche de maintenance, refactorisation ou support
+title: "[Task]: "
+labels:
+  - "type:task"
+  - "status:backlog"
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objectif de la tâche
+      description: Décris ce qu'il faut faire.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte
+      description: Ajoute les éléments techniques utiles.
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critères de fin
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: false

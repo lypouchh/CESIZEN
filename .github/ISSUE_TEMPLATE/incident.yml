@@ -1,0 +1,95 @@
+name: Déclarer un incident
+description: Signaler un bug, une régression ou un problème de production
+title: "[Incident]: "
+labels:
+  - "type:incident"
+  - "status:backlog"
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Niveau d'incident
+      description: Choisis le niveau de gravité le plus représentatif.
+      options:
+        - Critique - service indisponible
+        - Majeur - fonctionnalité bloquée
+        - Modéré - contournement disponible
+        - Faible - impact limité
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environnement
+      description: Où le problème a été constaté.
+      options:
+        - Production
+        - Préproduction
+        - Développement
+        - Local
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version ou build concerné
+      description: Indique la version, le commit ou la date de déploiement si connu.
+      placeholder: ex. develop / v1.2.3 / commit abc123
+    validations:
+      required: false
+  - type: textarea
+    id: summary
+    attributes:
+      label: Résumé du problème
+      description: Décris le symptôme observé en une ou deux phrases.
+      placeholder: ex. La page de connexion retourne une erreur 500.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire
+      placeholder: |
+        1. Aller sur ...
+        2. Cliquer sur ...
+        3. Observer ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportement attendu
+      placeholder: Décris le résultat attendu.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportement observé
+      placeholder: Décris ce qui se passe réellement.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact métier / utilisateur
+      description: Précise le nombre d'utilisateurs touchés, la fréquence et les conséquences.
+      placeholder: ex. Tous les utilisateurs sont bloqués sur le login.
+    validations:
+      required: false
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, captures ou erreurs
+      description: Colle les traces utiles, erreurs console, captures d'écran ou IDs de requête.
+      placeholder: Ajoute ici les informations de diagnostic.
+    validations:
+      required: false
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Contournement temporaire
+      description: Indique s'il existe une solution de secours.
+      placeholder: ex. Recharger la page ou utiliser un autre navigateur.
+    validations:
+      required: false
