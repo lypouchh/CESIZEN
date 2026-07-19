@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Support securite CESIZEN
-    url: https://github.com/lypouchh/CESIZEN/security/advisories
-    about: Utiliser ce canal pour tout signalement de faille de securite.
+  - name: Documentation du projet
+    url: https://github.com/lypouchh/CESIZEN/
+    about: Consulte le dépôt pour le contexte technique et les règles de contribution.
