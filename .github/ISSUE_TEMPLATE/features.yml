@@ -1,0 +1,40 @@
+name: Demander une évolution
+description: Proposer une nouvelle fonctionnalité ou une amélioration produit
+title: "[Feature]: "
+labels:
+  - "type:feature"
+  - "status:backlog"
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problème ou besoin
+      description: Explique le besoin métier ou l'opportunité identifiée.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposition de solution
+      description: Décris la solution attendue au niveau fonctionnel.
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Critères d'acceptation
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité souhaitée
+      options:
+        - Haute
+        - Moyenne
+        - Basse
+    validations:
+      required: false
