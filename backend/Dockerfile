@@ -28,11 +28,25 @@ COPY --from=composer:2.7.9 /usr/bin/composer /usr/bin/composer
 # Définir le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers du projet
-COPY . .
+# Copier les manifests Composer en premier pour optimiser le cache Docker
+COPY composer.json composer.lock ./
 
 # Installer les dépendances PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+# Copier uniquement les répertoires/fichiers nécessaires à l'exécution
+COPY app ./app
+COPY bootstrap ./bootstrap
+COPY config ./config
+COPY database ./database
+COPY public ./public
+COPY resources ./resources
+COPY routes ./routes
+COPY storage ./storage
+COPY artisan ./artisan
+
+# Optionnel mais utile pour certains contextes Laravel
+COPY .env.example ./.env.example
 
 # Donner les permissions appropriées
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
