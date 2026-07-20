@@ -35,13 +35,19 @@ COPY composer.json composer.lock ./
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
 
 # Copier le reste du code source (dont artisan)
-COPY . .
+COPY app ./app
+COPY bootstrap ./bootstrap
+COPY config ./config
+COPY database ./database
+COPY public ./public
+COPY resources ./resources
+COPY routes ./routes
+COPY storage ./storage
+COPY artisan ./artisan
+COPY .env.example ./.env.example
 
 # Maintenant que le code est copié (y compris artisan), on peut lancer les scripts
 RUN composer run-script post-autoload-dump --no-interaction --optimize-autoloader
-
-# Optionnel mais utile pour certains contextes Laravel
-COPY .env.example ./.env.example
 
 # Donner les permissions appropriées
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
