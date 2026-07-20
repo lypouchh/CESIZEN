@@ -46,11 +46,9 @@ COPY storage ./storage
 COPY artisan ./artisan
 COPY .env.example ./.env.example
 
-# Maintenant que le code est copié (y compris artisan), on peut lancer les scripts
-RUN composer run-script post-autoload-dump --no-interaction --optimize-autoloader
-
-# Donner les permissions appropriées
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+# Lancer les scripts post-install et définir les permissions en une seule étape
+RUN composer run-script post-autoload-dump --no-interaction --optimize-autoloader && \
+    chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 # Execution non-root
 USER www-data
