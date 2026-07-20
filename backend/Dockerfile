@@ -31,10 +31,10 @@ WORKDIR /app
 # Copier les manifests Composer en premier pour optimiser le cache Docker
 COPY composer.json composer.lock ./
 
-# Installer les dépendances PHP
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+# Installer les dépendances PHP sans exécuter les scripts pour le moment
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
 
-# Copier uniquement les répertoires/fichiers nécessaires à l'exécution
+# Copier le reste du code source (dont artisan)
 COPY app ./app
 COPY bootstrap ./bootstrap
 COPY config ./config
@@ -44,12 +44,11 @@ COPY resources ./resources
 COPY routes ./routes
 COPY storage ./storage
 COPY artisan ./artisan
-
-# Optionnel mais utile pour certains contextes Laravel
 COPY .env.example ./.env.example
 
-# Donner les permissions appropriées
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+# Lancer les scripts post-install et définir les permissions en une seule étape
+RUN composer run-script post-autoload-dump --no-interaction --optimize-autoloader && \
+    chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 # Execution non-root
 USER www-data
