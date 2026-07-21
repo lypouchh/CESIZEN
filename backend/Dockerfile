@@ -1,6 +1,5 @@
 # Image de base : php:8.2.22-fpm-bookworm (épinglée par digest pour la reproductibilité)
 FROM php@sha256:9de16d11baa9141d0f7893cfc16de6aac34826b0df11f6dcb5e17590e4edc3b7
-FROM php:8.2.22-fpm-bookworm@sha256:9de16d11baa9141d0f7893cfc16de6aac34826b0df11f6dcb5e17590e4edc3b7
 
 # Mettre à jour les paquets système pour corriger les CVE connues avant toute installation
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
