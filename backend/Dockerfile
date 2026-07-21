@@ -2,14 +2,14 @@ FROM php:8.2.22-fpm-bookworm
 
 # Installer les dépendances système
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
     curl \
-    libpng-dev \
+    git \
     libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
+    libpng-dev \
     libpq-dev \
+    libxml2-dev \
+    unzip \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Installer les extensions PHP nécessaires
@@ -47,7 +47,7 @@ COPY artisan ./artisan
 COPY .env.example ./.env.example
 
 # Lancer les scripts post-install et définir les permissions en une seule étape
-RUN composer run-script post-autoload-dump --no-interaction --optimize-autoloader && \
+RUN composer run-script post-autoload-dump --no-interaction && \
     chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 # Execution non-root
