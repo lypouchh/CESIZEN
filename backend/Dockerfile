@@ -47,7 +47,7 @@ COPY artisan ./artisan
 COPY .env.example ./.env.example
 
 # Lancer les scripts post-install et définir les permissions en une seule étape
-RUN composer run-script post-autoload-dump --no-interaction --optimize-autoloader && \
+RUN composer run-script post-autoload-dump --no-interaction && \
     chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 # Execution non-root
