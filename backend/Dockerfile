@@ -2,14 +2,14 @@ FROM php:8.2.22-fpm-bookworm
 
 # Installer les dépendances système
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
     curl \
-    libpng-dev \
+    git \
     libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
+    libpng-dev \
     libpq-dev \
+    libxml2-dev \
+    unzip \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Installer les extensions PHP nécessaires
