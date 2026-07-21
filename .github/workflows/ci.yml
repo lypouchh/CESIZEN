@@ -204,7 +204,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Audit frontend dependencies
         working-directory: frontend
@@ -212,6 +212,7 @@ jobs:
 
   docker-image:
     runs-on: [self-hosted, linux]
+    timeout-minutes: 15
     needs: [backend-tests, frontend-quality, migration-sql, dependency-audit]
     if: ${{ github.event_name != 'pull_request' && github.ref_name == 'main' }}
     env:
