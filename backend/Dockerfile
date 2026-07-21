@@ -1,7 +1,7 @@
 # Image de base : php:8.2.22-fpm-bookworm (épinglée par digest pour la reproductibilité)
 FROM php@sha256:9de16d11baa9141d0f7893cfc16de6aac34826b0df11f6dcb5e17590e4edc3b7
 
-# Mettre à jour les paquets système et installer les dépendances nécessaires
+# Mettre à jour les paquets système, installer les dépendances et les extensions PHP
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     curl \
     git \
@@ -11,17 +11,15 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     libxml2-dev \
     unzip \
     zip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Installer les extensions PHP nécessaires
-RUN docker-php-ext-install \
-    pdo_mysql \
-    pdo_pgsql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install \
+        pdo_mysql \
+        pdo_pgsql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd
 
 # Installer Composer
 COPY --from=composer:2.7.9 /usr/bin/composer /usr/bin/composer
