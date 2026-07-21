@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci && npm cache clean --force
+RUN npm ci && npm cache clean --force --ignore-scripts
 
 COPY index.html ./
 COPY vite.config.js ./
