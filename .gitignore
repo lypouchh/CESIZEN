@@ -33,6 +33,7 @@ frontend/*.log
 # Docker
 .env.local
 .env.*.local
+.env.prod
 docker-volumes
 mysql_data
 
