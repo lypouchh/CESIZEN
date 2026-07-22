@@ -7,16 +7,10 @@ env_file="${COMPOSE_ENV_FILE:-$workspace_root/.env.prod}"
 compose_base="${COMPOSE_BASE_FILE:-$workspace_root/docker-compose.prod.yml}"
 compose_bluegreen="$workspace_root/docker-compose.bluegreen.yml"
 project_name="${COMPOSE_PROJECT_NAME:-cesizen-prod}"
-migration_file="${MIGRATION_FILE:-$workspace_root/backend/artifacts/migration.sql}"
 active_file="$workspace_root/backend/docker/nginx/bluegreen/includes/active-upstream.conf"
 
 if [[ ! -f "$env_file" ]]; then
   echo "Fichier d'environnement introuvable: $env_file (copier .env.prod.example et renseigner les secrets)"
-  exit 1
-fi
-
-if [[ ! -f "$migration_file" ]]; then
-  echo "Migration artifact not found: $migration_file"
   exit 1
 fi
 
@@ -61,8 +55,36 @@ trap restore_previous_upstream ERR
 echo "[prod] Starting MySQL, frontend and the proxy"
 "${compose[@]}" up -d --pull always mysql frontend proxy
 
+echo "[prod] Waiting for MySQL to become ready"
+# Même précaution que pour dev/test : mysql:8.0 répond déjà à un ping pendant
+# l'initialisation de son serveur temporaire, avant que le serveur définitif
+# (et l'utilisateur applicatif) ne soit réellement prêt.
+for attempt in $(seq 1 20); do
+  if "${compose[@]}" exec -T mysql sh -lc \
+    "mysql -u\"$db_user\" -p\"$db_password\" \"$db_name\" -e 'SELECT 1;'" >/dev/null 2>&1; then
+    break
+  fi
+
+  if [[ "$attempt" -eq 20 ]]; then
+    echo "MySQL is not ready after waiting."
+    exit 1
+  fi
+
+  sleep 3
+done
+
 echo "[prod] Starting target service $target_service"
 "${compose[@]}" up -d --no-deps --pull always "$target_service"
+
+# Les migrations sont appliquées via le conteneur applicatif fraîchement
+# démarré (driver MySQL réel), pas en rejouant l'artefact SQL de la CI (qui
+# est un --pretend SQLite, dans le mauvais dialecte, voir local-deploy.sh).
+# On les applique par exec, avant le health check : le driver de session par
+# défaut de Laravel est "database", donc /health échoue tant que la table
+# "sessions" n'existe pas — sur un environnement neuf, attendre le health
+# check avant de migrer serait un blocage permanent.
+echo "[prod] Applying database migrations on $target_service (php artisan migrate --force)"
+"${compose[@]}" exec -T "$target_service" php artisan migrate --force
 
 echo "[prod] Waiting for $target_service to answer on /health"
 for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
@@ -77,11 +99,6 @@ for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
 
   sleep 3
 done
-
-echo "[prod] Applying expand/contract migrations from $migration_file"
-"${compose[@]}" exec -T mysql sh -lc \
-  "mysql -u\"$db_user\" -p\"$db_password\" \"$db_name\"" \
-  < "$migration_file"
 
 echo "[prod] Promoting $target_service in the proxy"
 printf 'set $active_upstream http://%s:8000;\n' "$target_service" > "$active_file"
