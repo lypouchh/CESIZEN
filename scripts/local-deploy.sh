@@ -61,22 +61,38 @@ echo "[$env_name] Stopping the $project_name stack only (les autres environnemen
 echo "[$env_name] Starting database only"
 "${compose[@]}" up -d mysql
 
+# La CD exporte IMAGE_TAG (ex. dev-<sha>) avant d'appeler ce script : il doit
+# gagner sur la valeur statique du fichier .env.<env>, sinon on redéploierait
+# un tag (ex. "develop") qui n'a jamais été poussé sur le registre.
+image_tag_override="${IMAGE_TAG:-}"
+
+# shellcheck disable=SC1090
+source "$env_file"
+
+if [[ -n "$image_tag_override" ]]; then
+  IMAGE_TAG="$image_tag_override"
+fi
+export IMAGE_TAG
+
 echo "[$env_name] Waiting for MySQL to become ready"
-for attempt in 1 2 3 4 5 6 7 8 9 10; do
-  if "${compose[@]}" exec -T mysql mysqladmin ping -h localhost --silent; then
+# L'image mysql:8.0 démarre un serveur temporaire le temps de son
+# initialisation (création base/utilisateur) puis bascule vers le serveur
+# définitif : un simple "mysqladmin ping" répond déjà pendant cette fenêtre
+# temporaire, avant que l'utilisateur applicatif n'existe vraiment. On
+# attend donc une connexion authentifiée réelle, pas un ping générique.
+for attempt in $(seq 1 20); do
+  if "${compose[@]}" exec -T mysql sh -lc \
+    "mysql -u\"${DB_USERNAME:-cesizen_user}\" -p\"${DB_PASSWORD}\" \"${DB_DATABASE}\" -e 'SELECT 1;'" >/dev/null 2>&1; then
     break
   fi
 
-  if [[ "$attempt" -eq 10 ]]; then
-    echo "MySQL is not ready after waiting."
+  if [[ "$attempt" -eq 20 ]]; then
+    echo "MySQL is not ready after waiting (le serveur définitif n'a pas pris le relais du serveur temporaire à temps)."
     exit 1
   fi
 
   sleep 3
 done
-
-# shellcheck disable=SC1090
-source "$env_file"
 
 echo "[$env_name] Applying database migrations from $migration_file"
 "${compose[@]}" exec -T mysql sh -lc \

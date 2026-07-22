@@ -99,6 +99,7 @@ jobs:
           DB_USERNAME=${{ secrets.PROD_DB_USERNAME }}
           DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
           DB_ROOT_PASSWORD=${{ secrets.PROD_DB_ROOT_PASSWORD }}
+          APP_KEY=${{ secrets.PROD_APP_KEY }}
           JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
           JWT_TTL=15
           JWT_REFRESH_TOKEN_TTL=10080
