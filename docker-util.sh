@@ -1,47 +1,49 @@
 #!/bin/bash
 
-# Utilitaire Docker pour CESIZEN
+# Utilitaire Docker pour CESIZEN (environnement DEV)
+
+COMPOSE="docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev"
 
 case "$1" in
     up)
-        docker-compose up -d
+        $COMPOSE up -d
         ;;
     down)
-        docker-compose down
+        $COMPOSE down
         ;;
     logs)
-        docker-compose logs -f ${2:-}
+        $COMPOSE logs -f ${2:-}
         ;;
     shell)
-        docker-compose exec laravel bash
+        $COMPOSE exec laravel bash
         ;;
     artisan)
-        docker-compose exec laravel php artisan "${@:2}"
+        $COMPOSE exec laravel php artisan "${@:2}"
         ;;
     migrate)
-        docker-compose exec laravel php artisan migrate ${@:2}
+        $COMPOSE exec laravel php artisan migrate ${@:2}
         ;;
     seed)
-        docker-compose exec laravel php artisan db:seed ${@:2}
+        $COMPOSE exec laravel php artisan db:seed ${@:2}
         ;;
     fresh)
-        docker-compose exec laravel php artisan migrate:fresh --seed
+        $COMPOSE exec laravel php artisan migrate:fresh --seed
         ;;
     test)
-        docker-compose exec laravel php artisan test ${@:2}
+        $COMPOSE exec laravel php artisan test ${@:2}
         ;;
     tinker)
-        docker-compose exec laravel php artisan tinker
+        $COMPOSE exec laravel php artisan tinker
         ;;
     mysql)
-        docker-compose exec mysql mysql -u cesizen_user -ppassword cesizen
+        $COMPOSE exec mysql mysql -u cesizen_user -p"$(grep -m1 '^DB_PASSWORD=' .env.dev | cut -d= -f2)" cesizen_dev
         ;;
     rebuild)
-        docker-compose build --no-cache ${2:-}
-        docker-compose up -d
+        $COMPOSE build --no-cache ${2:-}
+        $COMPOSE up -d
         ;;
     clean)
-        docker-compose down -v
+        $COMPOSE down -v
         ;;
     *)
         echo "Commandes disponibles:"

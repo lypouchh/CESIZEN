@@ -1,19 +1,21 @@
+name: ${COMPOSE_PROJECT_NAME:-cesizen-dev}
+
 services:
   # Service MySQL pour la base de données
   mysql:
     image: mysql:8.0
-    container_name: cesizen-mysql
+    container_name: ${COMPOSE_PROJECT_NAME:-cesizen-dev}-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-cesizen}
+      MYSQL_DATABASE: ${DB_DATABASE:-cesizen_dev}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
       MYSQL_PASSWORD: ${DB_PASSWORD:-password}
       MYSQL_USER: ${DB_USERNAME:-cesizen_user}
       MYSQL_ALLOW_EMPTY_PASSWORD: 'false'
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "127.0.0.1:${DB_PORT:-3306}:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - cesizen-dev-db:/var/lib/mysql
       - ./backend/docker/mysql/init:/docker-entrypoint-initdb.d
     networks:
       - cesizen-network
@@ -27,7 +29,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: cesizen-laravel
+    image: ghcr.io/lypouchh/cesizen-backend:${IMAGE_TAG:-develop}
+    container_name: ${COMPOSE_PROJECT_NAME:-cesizen-dev}-laravel
     restart: unless-stopped
     depends_on:
       mysql:
@@ -36,13 +39,16 @@ services:
       - APP_NAME=CESIZEN
       - APP_ENV=local
       - APP_DEBUG=true
-      - APP_URL=http://localhost
+      - APP_URL=${APP_URL:-http://localhost:8000}
       - DB_CONNECTION=mysql
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_DATABASE=${DB_DATABASE:-cesizen}
+      - DB_DATABASE=${DB_DATABASE:-cesizen_dev}
       - DB_USERNAME=${DB_USERNAME:-cesizen_user}
       - DB_PASSWORD=${DB_PASSWORD:-password}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_TTL=${JWT_TTL:-15}
+      - JWT_REFRESH_TOKEN_TTL=${JWT_REFRESH_TOKEN_TTL:-10080}
       - CACHE_DRIVER=file
       - SESSION_DRIVER=file
     volumes:
@@ -54,13 +60,13 @@ services:
     expose:
       - 9000
 
-  # Service Nginx pour servir le backend
+  # Service Nginx : reverse proxy vers l'API Laravel
   nginx:
     image: nginx:alpine
-    container_name: cesizen-nginx
+    container_name: ${COMPOSE_PROJECT_NAME:-cesizen-dev}-nginx
     restart: unless-stopped
     ports:
-      - "8000:80"
+      - "${NGINX_PORT:-8000}:80"
     volumes:
       - ./backend:/app
       - ./backend/docker/nginx/conf.d:/etc/nginx/conf.d
@@ -69,27 +75,27 @@ services:
     networks:
       - cesizen-network
 
-  # Service Node pour le frontend (optionnel, peut être lancé séparément)
+  # Service Node : serveur de développement Vite avec hot-reload
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: cesizen-frontend
+    container_name: ${COMPOSE_PROJECT_NAME:-cesizen-dev}-frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     networks:
       - cesizen-network
     environment:
-      - VITE_API_URL=http://localhost:8000/api
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000}
 
 networks:
   cesizen-network:
     driver: bridge
 
 volumes:
-  mysql_data:
+  cesizen-dev-db:
     driver: local
