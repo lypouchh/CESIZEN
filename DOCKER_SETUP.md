@@ -22,9 +22,9 @@ chmod +x docker-init.sh
 
 Ou manuellement:
 ```bash
-docker-compose up -d
-docker-compose exec laravel php artisan migrate
-docker-compose exec laravel php artisan db:seed
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev up -d
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan migrate
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan db:seed
 ```
 
 ## 📍 Accès aux services
@@ -44,61 +44,61 @@ Les variables d'environnement sont définies dans:
 - `.env.docker` - Configuration Docker
 - `backend/.env` - Créé automatiquement lors de l'initialisation
 
-Pour modifier les ports ou les identifiants MySQL, éditez le fichier `docker-compose.yml`.
+Pour modifier les ports ou les identifiants MySQL, éditez `.env.dev` (ports/identifiants) ou `docker-compose.dev.yml` (structure des services).
 
 ## 🛠️ Commandes utiles
 
 ### Afficher les logs
 ```bash
-docker-compose logs -f          # Tous les services
-docker-compose logs -f laravel  # Seulement Laravel
-docker-compose logs -f mysql    # Seulement MySQL
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev logs -f          # Tous les services
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev logs -f laravel  # Seulement Laravel
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev logs -f mysql    # Seulement MySQL
 ```
 
 ### Accéder au shell
 ```bash
-docker-compose exec laravel bash        # Shell Laravel
-docker-compose exec mysql bash          # Shell MySQL
-docker-compose exec laravel php artisan # Commandes Artisan
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel bash        # Shell Laravel
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec mysql bash          # Shell MySQL
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan # Commandes Artisan
 ```
 
 ### Exécuter des commandes Artisan
 ```bash
-docker-compose exec laravel php artisan migrate
-docker-compose exec laravel php artisan db:seed
-docker-compose exec laravel php artisan tinker
-docker-compose exec laravel php artisan test
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan migrate
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan db:seed
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan tinker
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan test
 ```
 
 ### Gestion des containers
 ```bash
-docker-compose up -d        # Démarrer les services
-docker-compose down         # Arrêter les services
-docker-compose restart      # Redémarrer les services
-docker-compose ps           # Afficher l'état des services
-docker-compose build        # Reconstruire les images
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev up -d        # Démarrer les services
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev down         # Arrêter les services
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev restart      # Redémarrer les services
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev ps           # Afficher l'état des services
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev build        # Reconstruire les images
 ```
 
 ## 🗄️ Gestion de la base de données
 
 ### Effectuer une migration
 ```bash
-docker-compose exec laravel php artisan migrate
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan migrate
 ```
 
 ### Revenir en arrière
 ```bash
-docker-compose exec laravel php artisan migrate:rollback
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan migrate:rollback
 ```
 
 ### Rafraîchir entièrement la base de données
 ```bash
-docker-compose exec laravel php artisan migrate:fresh --seed
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan migrate:fresh --seed
 ```
 
 ### Accéder directement à MySQL
 ```bash
-docker-compose exec mysql mysql -u cesizen_user -p cesizen
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec mysql mysql -u cesizen_user -p cesizen
 # Entrez le mot de passe: password
 ```
 
@@ -106,18 +106,18 @@ docker-compose exec mysql mysql -u cesizen_user -p cesizen
 
 ```bash
 # Exécuter les tests
-docker-compose exec laravel php artisan test
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan test
 
 # Avec coverage
-docker-compose exec laravel php artisan test --coverage
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan test --coverage
 ```
 
 ## 🔄 Rebuild après changements
 
 Si vous modifiez le Dockerfile ou les dépendances:
 ```bash
-docker-compose build --no-cache
-docker-compose up -d
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev build --no-cache
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev up -d
 ```
 
 ## 📚 Frontend (Vite + React/Vue)
@@ -129,7 +129,7 @@ Le frontend s'exécute sur le port 5173:
 
 Pour développer en hot-reload:
 ```bash
-docker-compose logs -f frontend
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev logs -f frontend
 ```
 
 ## 🚨 Résolution de problèmes
@@ -140,19 +140,19 @@ docker-compose logs -f frontend
 netstat -ano | findstr :8000  # Windows
 lsof -i :8000                 # macOS/Linux
 
-# Ou modifier le port dans docker-compose.yml
+# Ou modifier DB_PORT/NGINX_PORT/FRONTEND_PORT dans .env.dev
 ```
 
 ### Permissions d'accès à la base de données
 ```bash
-docker-compose exec laravel chmod -R 775 storage bootstrap/cache
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel chmod -R 775 storage bootstrap/cache
 ```
 
 ### Réinitialiser complètement
 ```bash
-docker-compose down -v              # -v supprime les volumes
-docker-compose up -d --build        # Reconstruire et relancer
-docker-compose exec laravel php artisan migrate --seed
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev down -v              # -v supprime les volumes
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev up -d --build        # Reconstruire et relancer
+docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev exec laravel php artisan migrate --seed
 ```
 
 ## 📖 Documentation
@@ -161,11 +161,9 @@ docker-compose exec laravel php artisan migrate --seed
 - [Docker Documentation](https://docs.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
-## 🎯 Production
+## 🎯 Environnements TEST et PROD
 
-Pour déployer en production:
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-**Note**: Assurez-vous de configurer les variables d'environnement appropriées avant le déploiement.
+Ce fichier ne couvre que l'environnement DEV local. Les environnements TEST et PROD tournent en
+parallèle sur le même poste via des stacks isolées (ports, projet Compose, volumes distincts) et
+sont gérés par la CD (`scripts/local-deploy.sh --env test|prod`). Voir le README, section
+"Environnements Docker Compose", pour le tableau des ports et les commandes de démarrage manuel.

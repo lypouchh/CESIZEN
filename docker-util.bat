@@ -1,7 +1,9 @@
 @echo off
-REM Utilitaire Docker pour CESIZEN (Windows)
+REM Utilitaire Docker pour CESIZEN (Windows, environnement DEV)
 
 setlocal enabledelayedexpansion
+
+set COMPOSE=docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev
 
 if "%1"=="" (
     echo Commandes disponibles:
@@ -22,76 +24,76 @@ if "%1"=="" (
 )
 
 if "%1"=="up" (
-    docker-compose up -d
+    %COMPOSE% up -d
     goto :eof
 )
 
 if "%1"=="down" (
-    docker-compose down
+    %COMPOSE% down
     goto :eof
 )
 
 if "%1"=="logs" (
     if "%2"=="" (
-        docker-compose logs -f
+        %COMPOSE% logs -f
     ) else (
-        docker-compose logs -f %2
+        %COMPOSE% logs -f %2
     )
     goto :eof
 )
 
 if "%1"=="shell" (
-    docker-compose exec laravel bash
+    %COMPOSE% exec laravel bash
     goto :eof
 )
 
 if "%1"=="artisan" (
-    docker-compose exec laravel php artisan %2 %3 %4 %5 %6 %7 %8 %9
+    %COMPOSE% exec laravel php artisan %2 %3 %4 %5 %6 %7 %8 %9
     goto :eof
 )
 
 if "%1"=="migrate" (
-    docker-compose exec laravel php artisan migrate
+    %COMPOSE% exec laravel php artisan migrate
     goto :eof
 )
 
 if "%1"=="seed" (
-    docker-compose exec laravel php artisan db:seed
+    %COMPOSE% exec laravel php artisan db:seed
     goto :eof
 )
 
 if "%1"=="fresh" (
-    docker-compose exec laravel php artisan migrate:fresh --seed
+    %COMPOSE% exec laravel php artisan migrate:fresh --seed
     goto :eof
 )
 
 if "%1"=="test" (
-    docker-compose exec laravel php artisan test
+    %COMPOSE% exec laravel php artisan test
     goto :eof
 )
 
 if "%1"=="tinker" (
-    docker-compose exec laravel php artisan tinker
+    %COMPOSE% exec laravel php artisan tinker
     goto :eof
 )
 
 if "%1"=="mysql" (
-    docker-compose exec mysql mysql -u cesizen_user -ppassword cesizen
+    %COMPOSE% exec mysql mysql -u cesizen_user -p cesizen_dev
     goto :eof
 )
 
 if "%1"=="rebuild" (
     if "%2"=="" (
-        docker-compose build --no-cache
+        %COMPOSE% build --no-cache
     ) else (
-        docker-compose build --no-cache %2
+        %COMPOSE% build --no-cache %2
     )
-    docker-compose up -d
+    %COMPOSE% up -d
     goto :eof
 )
 
 if "%1"=="clean" (
-    docker-compose down -v
+    %COMPOSE% down -v
     goto :eof
 )
 
