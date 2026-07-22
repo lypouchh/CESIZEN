@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# Script d'initialisation Docker pour CESIZEN
+# Script d'initialisation Docker pour CESIZEN (environnement DEV)
 
 set -e
+
+COMPOSE="docker compose --env-file .env.dev -f docker-compose.dev.yml -p cesizen-dev"
 
 echo "🚀 Initialisation de CESIZEN avec Docker..."
 
@@ -14,7 +16,7 @@ fi
 
 # Construire et lancer les containers
 echo "🐳 Lancement des services Docker..."
-docker-compose up -d
+$COMPOSE up -d --build
 
 # Attendre que MySQL soit prêt
 echo "⏳ Attente du service MySQL..."
@@ -22,19 +24,19 @@ sleep 10
 
 # Générer la clé Laravel si nécessaire
 echo "🔑 Génération de la clé Laravel..."
-docker-compose exec -T laravel php artisan key:generate --force || true
+$COMPOSE exec -T laravel php artisan key:generate --force || true
 
 # Exécuter les migrations
 echo "🗄️ Exécution des migrations..."
-docker-compose exec -T laravel php artisan migrate --force
+$COMPOSE exec -T laravel php artisan migrate --force
 
 # Exécuter les seeders (optionnel)
 echo "🌱 Exécution des seeders..."
-docker-compose exec -T laravel php artisan db:seed
+$COMPOSE exec -T laravel php artisan db:seed
 
 # Créer les liens de stockage
 echo "🔗 Création des liens de stockage..."
-docker-compose exec -T laravel php artisan storage:link || true
+$COMPOSE exec -T laravel php artisan storage:link || true
 
 echo ""
 echo "✅ CESIZEN est prêt!"
@@ -45,7 +47,7 @@ echo "  - Frontend: http://localhost:5173"
 echo "  - MySQL: localhost:3306"
 echo ""
 echo "📚 Commandes utiles:"
-echo "  - Afficher les logs: docker-compose logs -f"
-echo "  - Accéder au shell Laravel: docker-compose exec laravel bash"
-echo "  - Arrêter les services: docker-compose down"
-echo "  - Redémarrer les services: docker-compose restart"
+echo "  - Afficher les logs: $COMPOSE logs -f"
+echo "  - Accéder au shell Laravel: $COMPOSE exec laravel bash"
+echo "  - Arrêter les services: $COMPOSE down"
+echo "  - Redémarrer les services: $COMPOSE restart"

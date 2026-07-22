@@ -1,25 +1,235 @@
 name: CD
 
 on:
-  workflow_dispatch:
   push:
+    branches: [develop, Test, main]
     tags:
       - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
-  deployment-plan:
+  determine-environment:
     runs-on: [self-hosted, linux]
+    outputs:
+      env_name: ${{ steps.env.outputs.env_name }}
+      image_tag: ${{ steps.env.outputs.image_tag }}
+      extra_tag: ${{ steps.env.outputs.extra_tag }}
+    steps:
+      - name: Map branch/tag to target environment
+        id: env
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            env_name=prod
+          else
+            case "${{ github.ref_name }}" in
+              develop) env_name=dev ;;
+              Test) env_name=test ;;
+              main) env_name=prod ;;
+              *)
+                echo "Branche non supportée par la CD: ${{ github.ref_name }}"
+                exit 1
+                ;;
+            esac
+          fi
+
+          image_tag="${env_name}-${short_sha}"
+          extra_tag=""
+          if [[ "$env_name" == "prod" ]]; then
+            extra_tag="latest"
+          fi
+
+          echo "env_name=$env_name" >> "$GITHUB_OUTPUT"
+          echo "image_tag=$image_tag" >> "$GITHUB_OUTPUT"
+          echo "extra_tag=$extra_tag" >> "$GITHUB_OUTPUT"
+          echo "Déploiement -> environnement: $env_name, tag image: $image_tag"
+
+  build-and-deploy:
+    runs-on: [self-hosted, linux]
+    needs: determine-environment
+    environment: ${{ needs.determine-environment.outputs.env_name }}
+    env:
+      ENV_NAME: ${{ needs.determine-environment.outputs.env_name }}
+      IMAGE_TAG: ${{ needs.determine-environment.outputs.image_tag }}
+      EXTRA_TAG: ${{ needs.determine-environment.outputs.extra_tag }}
+      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-${{ github.run_attempt }}
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: CD boundary reminder
+      - name: Cache Composer dependencies
+        uses: actions/cache@v6
+        with:
+          path: backend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Generate SQL migration script for this commit (--pretend, same script as CI)
+        env:
+          JWT_SECRET: cd-pretend-secret-cd-pretend-secret-cd-pretend-secret
+        run: bash scripts/generate-migration-sql.sh
+
+      - name: Materialize environment secrets (prod only)
+        if: ${{ env.ENV_NAME == 'prod' }}
         run: |
-          echo "CD workflow: deployment boundary only"
-          echo "Database migrations are generated in CI as artifacts."
-          echo "This workflow does not auto-apply SQL migration scripts."
-          echo "Apply migration script manually during controlled deployment."
+          cat > .env.prod <<EOF
+          COMPOSE_PROJECT_NAME=cesizen-prod
+          IMAGE_TAG=${{ env.IMAGE_TAG }}
+          DB_PORT=3308
+          NGINX_PORT=8002
+          FRONTEND_PORT=5175
+          DB_DATABASE=${{ secrets.PROD_DB_DATABASE }}
+          DB_USERNAME=${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+          DB_ROOT_PASSWORD=${{ secrets.PROD_DB_ROOT_PASSWORD }}
+          APP_KEY=${{ secrets.PROD_APP_KEY }}
+          JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
+          JWT_TTL=15
+          JWT_REFRESH_TOKEN_TTL=10080
+          APP_URL=${{ secrets.PROD_APP_URL }}
+          CORS_ALLOWED_ORIGINS=${{ secrets.PROD_CORS_ALLOWED_ORIGINS }}
+          VITE_API_BASE_URL=${{ secrets.PROD_APP_URL }}
+          EOF
+          chmod 600 .env.prod
+
+      - name: Prepare isolated Docker config
+        run: |
+          mkdir -p "$DOCKER_CONFIG"
+          printf '{"auths":{}}\n' > "$DOCKER_CONFIG/config.json"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c
+
+      - name: Compute image tags
+        id: tags
+        run: |
+          owner="${{ github.repository_owner }}"
+
+          {
+            echo "backend<<TAGS_EOF"
+            echo "ghcr.io/$owner/cesizen-backend:${{ env.IMAGE_TAG }}"
+            [[ -n "${{ env.EXTRA_TAG }}" ]] && echo "ghcr.io/$owner/cesizen-backend:${{ env.EXTRA_TAG }}"
+            echo "TAGS_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "frontend<<TAGS_EOF"
+            echo "ghcr.io/$owner/cesizen-frontend:${{ env.IMAGE_TAG }}"
+            [[ -n "${{ env.EXTRA_TAG }}" ]] && echo "ghcr.io/$owner/cesizen-frontend:${{ env.EXTRA_TAG }}"
+            echo "TAGS_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.backend }}
+
+      - name: Scan backend image with Trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/cesizen-backend:${{ env.IMAGE_TAG }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+      - name: Read frontend API URL for this environment
+        if: ${{ env.ENV_NAME != 'dev' }}
+        id: frontend_api
+        run: |
+          env_file=".env.${{ env.ENV_NAME }}"
+          # shellcheck disable=SC1090
+          source "$env_file"
+          echo "api_base_url=$VITE_API_BASE_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push frontend image (test/prod only)
+        if: ${{ env.ENV_NAME != 'dev' }}
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.static
+          push: true
+          build-args: |
+            VITE_API_BASE_URL=${{ steps.frontend_api.outputs.api_base_url }}
+          tags: ${{ steps.tags.outputs.frontend }}
+
+      - name: Scan frontend image with Trivy
+        if: ${{ env.ENV_NAME != 'dev' }}
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/cesizen-frontend:${{ env.IMAGE_TAG }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+      - name: Deploy to the target environment
+        run: |
+          chmod +x scripts/local-deploy.sh scripts/bluegreen-deploy.sh
+          bash scripts/local-deploy.sh --env "${{ env.ENV_NAME }}"
+
+      - name: Determine environment ports for smoke test
+        id: ports
+        run: |
+          env_file=".env.${{ env.ENV_NAME }}"
+          # shellcheck disable=SC1090
+          source "$env_file"
+          echo "nginx_port=${NGINX_PORT}" >> "$GITHUB_OUTPUT"
+          echo "frontend_port=${FRONTEND_PORT}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test API
+        run: |
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS "http://localhost:${{ steps.ports.outputs.nginx_port }}/health" >/dev/null; then
+              echo "API OK sur le port ${{ steps.ports.outputs.nginx_port }}"
+              break
+            fi
+            if [[ "$attempt" -eq 10 ]]; then
+              echo "API injoignable après déploiement (port ${{ steps.ports.outputs.nginx_port }})"
+              exit 1
+            fi
+            sleep 3
+          done
+
+      - name: Smoke test frontend
+        run: |
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS "http://localhost:${{ steps.ports.outputs.frontend_port }}/" >/dev/null; then
+              echo "Frontend OK sur le port ${{ steps.ports.outputs.frontend_port }}"
+              break
+            fi
+            if [[ "$attempt" -eq 10 ]]; then
+              echo "Frontend injoignable après déploiement (port ${{ steps.ports.outputs.frontend_port }})"
+              exit 1
+            fi
+            sleep 3
+          done

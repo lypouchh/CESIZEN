@@ -1,7 +1,7 @@
 services:
   app-blue:
-    image: ghcr.io/lypouchh/cesizen-backend:latest
-    container_name: cesizen-app-blue
+    image: ghcr.io/lypouchh/cesizen-backend:${IMAGE_TAG:-latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-cesizen-prod}-app-blue
     restart: unless-stopped
     depends_on:
       mysql:
@@ -11,6 +11,7 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - APP_URL=${APP_URL:-http://localhost}
+      - APP_KEY=${APP_KEY}
       - APP_COLOR=blue
       - SESSION_SECURE_COOKIE=true
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost}
@@ -20,6 +21,9 @@ services:
       - DB_DATABASE=${DB_DATABASE:-cesizen}
       - DB_USERNAME=${DB_USERNAME:-cesizen_user}
       - DB_PASSWORD=${DB_PASSWORD:-password}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_TTL=${JWT_TTL:-15}
+      - JWT_REFRESH_TOKEN_TTL=${JWT_REFRESH_TOKEN_TTL:-10080}
     expose:
       - 8000
     networks:
@@ -28,8 +32,8 @@ services:
       - no-new-privileges:true
 
   app-green:
-    image: ghcr.io/lypouchh/cesizen-backend:latest
-    container_name: cesizen-app-green
+    image: ghcr.io/lypouchh/cesizen-backend:${IMAGE_TAG:-latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-cesizen-prod}-app-green
     restart: unless-stopped
     depends_on:
       mysql:
@@ -39,6 +43,7 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - APP_URL=${APP_URL:-http://localhost}
+      - APP_KEY=${APP_KEY}
       - APP_COLOR=green
       - SESSION_SECURE_COOKIE=true
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost}
@@ -48,6 +53,9 @@ services:
       - DB_DATABASE=${DB_DATABASE:-cesizen}
       - DB_USERNAME=${DB_USERNAME:-cesizen_user}
       - DB_PASSWORD=${DB_PASSWORD:-password}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_TTL=${JWT_TTL:-15}
+      - JWT_REFRESH_TOKEN_TTL=${JWT_REFRESH_TOKEN_TTL:-10080}
     expose:
       - 8000
     networks:
@@ -57,10 +65,10 @@ services:
 
   proxy:
     image: nginx:alpine
-    container_name: cesizen-bluegreen-proxy
+    container_name: ${COMPOSE_PROJECT_NAME:-cesizen-prod}-bluegreen-proxy
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "${NGINX_PORT:-8002}:80"
     volumes:
       - ./backend/docker/nginx/bluegreen:/etc/nginx/conf.d:ro
     networks:
