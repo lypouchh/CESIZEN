@@ -41,15 +41,9 @@ fi
 compose_file="$workspace_root/docker-compose.$env_name.yml"
 env_file="$workspace_root/.env.$env_name"
 project_name="cesizen-$env_name"
-migration_file="$workspace_root/backend/artifacts/migration.sql"
 
 if [[ ! -f "$env_file" ]]; then
   echo "Fichier d'environnement introuvable: $env_file"
-  exit 1
-fi
-
-if [[ ! -f "$migration_file" ]]; then
-  echo "Migration artifact not found: $migration_file"
   exit 1
 fi
 
@@ -94,13 +88,16 @@ for attempt in $(seq 1 20); do
   sleep 3
 done
 
-echo "[$env_name] Applying database migrations from $migration_file"
-"${compose[@]}" exec -T mysql sh -lc \
-  "mysql -u\"${DB_USERNAME:-cesizen_user}\" -p\"${DB_PASSWORD}\" \"${DB_DATABASE}\"" \
-  < "$migration_file"
-
 echo "[$env_name] Pulling images tagged for this branch"
 "${compose[@]}" pull || echo "[$env_name] Certains services sont construits localement (pas d'image à tirer), c'est attendu pour dev."
+
+# L'artefact SQL généré par la CI (backend/artifacts/migration.sql) est un
+# "--pretend" produit contre une base SQLite éphémère : utile pour la revue,
+# mais dans un dialecte différent de MySQL et donc impossible à rejouer tel
+# quel. On applique les migrations avec le driver réel de l'environnement
+# cible, via l'image qui vient d'être tirée, avant de basculer le trafic.
+echo "[$env_name] Applying database migrations (php artisan migrate --force)"
+"${compose[@]}" run --rm --no-deps laravel php artisan migrate --force
 
 echo "[$env_name] Starting the $project_name stack"
 "${compose[@]}" up -d --build

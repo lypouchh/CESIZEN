@@ -56,6 +56,10 @@ services:
       - ./backend:/app
       - /app/node_modules
       - /app/vendor
+      # bootstrap/cache est commité dans git avec le cache d'auto-discovery
+      # généré en local (dev deps incluses, ex. laravel/pail) : un bind-mount
+      # direct écraserait le cache "no-dev" correct régénéré dans l'image.
+      - /app/bootstrap/cache
     networks:
       - cesizen-network
     expose:
