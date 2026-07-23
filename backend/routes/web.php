@@ -1,5 +1,6 @@
 <?php
 
+// Démo soutenance : PR de démonstration du workflow develop (aucun changement fonctionnel).
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
