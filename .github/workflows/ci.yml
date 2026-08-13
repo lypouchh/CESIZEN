@@ -171,7 +171,7 @@ jobs:
 
       - name: SonarCloud Quality Gate
         if: ${{ steps.sonar_ready.outputs.enabled == 'true' && steps.sonar_scan.outcome == 'success' }}
-        uses: SonarSource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b
+        uses: SonarSource/sonarqube-quality-gate-action@7a5fffe8e523c40e0c740b6bc2712ab503e52efa
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
